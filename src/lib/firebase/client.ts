@@ -19,7 +19,7 @@ if (!getApps().length) {
     !firebaseConfig.projectId
   ) {
     console.error(
-      'Firebase config is missing. Make sure you have set the environment variables in .env correctly.'
+      'Firebase config is missing. Make sure you have set the NEXT_PUBLIC_FIREBASE_ environment variables in .env correctly.'
     );
     // Avoid initializing if essential config is missing, to prevent further errors.
     // You might want to handle this case more gracefully depending on your app's needs.
