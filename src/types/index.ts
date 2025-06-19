@@ -5,9 +5,9 @@ export interface Product {
   description: string | null;
   image: string | null;
   category: string | null;
-  datahint?: string | null; // Marked as unused
+  datahint?: string | null; 
   is_active: boolean;
-  created_at: string | null; // Year as string or int as string
+  created_at: string | null; // ISO 8601 timestamp string
 }
 
 // For form handling, ensure non-nullable fields are enforced by Zod schema

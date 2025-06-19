@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpDown, Edit3, Trash2, Eye, EyeOff } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { ProductActions } from "./product-actions";
+import { format } from 'date-fns'; // For formatting date
 
 export const columns: ColumnDef<Product>[] = [
   {
@@ -115,8 +115,14 @@ export const columns: ColumnDef<Product>[] = [
     },
     cell: ({ row }) => {
       const createdAt = row.getValue("created_at") as string | null;
-      // Assuming it's just a year
-      return createdAt || <span className="text-muted-foreground italic">N/A</span>;
+      if (!createdAt) {
+        return <span className="text-muted-foreground italic">N/A</span>;
+      }
+      try {
+        return format(new Date(createdAt), 'dd/MM/yyyy HH:mm');
+      } catch (e) {
+        return <span className="text-muted-foreground italic">Data Inválida</span>;
+      }
     },
   },
   {

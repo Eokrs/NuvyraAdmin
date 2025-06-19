@@ -31,15 +31,14 @@ export async function createProductAction(formData: ProductFormData) {
 
   const { name, description, image, category, is_active } = validatedFields.data;
   const normalizedCat = normalizeCategory(category);
-  const currentYear = new Date().getFullYear().toString();
-
+  
   const productDataToInsert = { 
     name,
     description: description ?? null, 
     image,
     category: normalizedCat, 
     is_active,
-    created_at: currentYear
+    created_at: new Date().toISOString() // Changed to full ISO timestamp
   };
 
   const { data, error } = await supabase
@@ -70,12 +69,13 @@ export async function updateProductAction(id: string, formData: ProductFormData)
   const { name, description, image, category, is_active: isActiveValue } = validatedFields.data;
   const normalizedCat = normalizeCategory(category);
 
+  // Note: created_at is not updated here, which is typically the desired behavior.
   const productDataToUpdate = { 
     name: name,
     description: description ?? null,
     image: image,
     category: normalizedCat,
-    is_active: isActiveValue, // Explicitly use the validated is_active value
+    is_active: isActiveValue,
   };
 
   const { data, error } = await supabase
