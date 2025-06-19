@@ -32,11 +32,12 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
   DropdownMenuLabel,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronDown, Filter, RefreshCw, Trash2 } from "lucide-react";
-import { Product } from "@/types";
+import type { Product } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { bulkDeleteProductsAction, bulkToggleProductStatusAction } from "../actions";
 import {
