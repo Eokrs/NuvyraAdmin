@@ -240,7 +240,7 @@ export function ProductsDataTable<TData extends Product, TValue>({
                 <DropdownMenuItem onClick={() => confirmBulkAction('deactivate')}>Desativar</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => confirmBulkAction('delete')} className="text-destructive focus:text-destructive">
-                    Deletar
+                    Excluir Permanentemente
                 </DropdownMenuItem>
             </DropdownMenuContent>
             </DropdownMenu>
@@ -326,9 +326,9 @@ export function ProductsDataTable<TData extends Product, TValue>({
             <AlertDialogTitle>Confirmar Ação em Massa</AlertDialogTitle>
             <AlertDialogDescription>
               Você tem certeza que deseja{' '}
-              {bulkActionType === 'delete' ? 'deletar' : bulkActionType === 'activate' ? 'ativar' : 'desativar'}{' '}
+              {bulkActionType === 'delete' ? 'excluir permanentemente' : bulkActionType === 'activate' ? 'ativar' : 'desativar'}{' '}
               os {table.getFilteredSelectedRowModel().rows.length} produtos selecionados?
-              {bulkActionType === 'delete' && " Esta ação marcará os produtos como inativos, e não poderá ser desfeita facilmente."}
+              {bulkActionType === 'delete' && " Esta ação não poderá ser desfeita."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

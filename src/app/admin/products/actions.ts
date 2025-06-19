@@ -85,7 +85,7 @@ export async function updateProductAction(id: string, formData: ProductFormData)
   }
   
   const { name, description, category } = validatedFields.data;
-  const isActiveValue = Boolean(formData.is_active); // Ensure boolean
+  const isActiveValue = Boolean(formData.is_active);
   let originalImageUrl = validatedFields.data.image;
   let finalImageUrl = originalImageUrl;
 
@@ -131,20 +131,19 @@ export async function updateProductAction(id: string, formData: ProductFormData)
 }
 
 export async function deleteProductAction(id: string) {
-  // Soft delete: set is_active to false
   const supabase = createSupabaseServerClient();
   const { error } = await supabase
     .from("products")
-    .update({ is_active: false })
+    .delete()
     .eq("id", id);
 
   if (error) {
-    console.error("Supabase error 'deleting' product:", error);
+    console.error("Supabase error deleting product:", error);
     return { error: error.message };
   }
 
   revalidatePath("/admin/products");
-  return { success: true, message: "Produto 'deletado' (inativado) com sucesso." };
+  return { success: true, message: "Produto excluído permanentemente com sucesso." };
 }
 
 export async function toggleProductStatusAction(id: string, field: 'is_active', value: boolean) {
@@ -171,15 +170,15 @@ export async function bulkDeleteProductsAction(productIds: string[]) {
   const supabase = createSupabaseServerClient();
   const { error } = await supabase
     .from("products")
-    .update({ is_active: false })
+    .delete()
     .in("id", productIds);
 
   if (error) {
-    console.error("Supabase error bulk 'deleting' products:", error);
+    console.error("Supabase error bulk deleting products:", error);
     return { error: error.message };
   }
   revalidatePath("/admin/products");
-  return { success: true, message: `${productIds.length} produto(s) 'deletado(s)' com sucesso.` };
+  return { success: true, message: `${productIds.length} produto(s) excluído(s) permanentemente com sucesso.` };
 }
 
 export async function bulkToggleProductStatusAction(productIds: string[], isActive: boolean) {

@@ -41,10 +41,10 @@ export function ProductActions({ product }: ProductActionsProps) {
   const handleDelete = async () => {
     const result = await deleteProductAction(product.id);
     if (result.success) {
-      toast({ title: "Produto 'deletado'", description: "O produto foi marcado como inativo." });
+      toast({ title: "Produto Excluído", description: "O produto foi excluído permanentemente." });
       router.refresh(); // Refresh data on the page
     } else {
-      toast({ title: "Erro ao 'deletar'", description: result.error, variant: "destructive" });
+      toast({ title: "Erro ao Excluir", description: result.error, variant: "destructive" });
     }
     setIsDeleteDialogOpen(false);
   };
@@ -92,7 +92,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer">
             <Trash2 className="mr-2 h-4 w-4" />
-            Deletar (Inativar)
+            Excluir Permanentemente
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -100,15 +100,15 @@ export function ProductActions({ product }: ProductActionsProps) {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar "Deleção"</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar Exclusão Permanente</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja "deletar" o produto "{product.name}"? Esta ação irá marcar o produto como inativo.
+              Tem certeza que deseja excluir permanentemente o produto "{product.name}"? Esta ação não poderá ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Confirmar "Deleção"
+              Confirmar Exclusão
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
