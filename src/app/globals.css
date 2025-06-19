@@ -4,77 +4,76 @@
 
 @layer base {
   :root {
-    --background: 251 41% 17%; /* #211B3D */
+    --background: 242 32% 10%; /* Very dark purple, e.g., #100F1F */
     --foreground: 0 0% 98%; /* Light text for dark background */
 
-    --card: 251 41% 22%; /* Slightly lighter than background for card effect */
+    --card: 242 30% 15%; /* Slightly lighter than background for card effect */
     --card-foreground: 0 0% 98%;
 
-    --popover: 251 41% 20%; /* Similar to card for popovers */
+    --popover: 242 30% 13%; /* Similar to card for popovers */
     --popover-foreground: 0 0% 98%;
 
-    --primary: 249 79% 60%; /* #6246EA */
+    --primary: 269 100% 50%; /* Vibrant purple, e.g., #7A00FF */
     --primary-foreground: 0 0% 98%; /* White text on primary */
 
-    --secondary: 251 30% 35%; /* A less prominent purple */
+    --secondary: 269 60% 35%; /* A less prominent, darker purple */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 251 30% 25%;
+    --muted: 242 25% 20%; /* Muted purple/gray */
     --muted-foreground: 0 0% 60%; /* Lighter gray for muted text */
 
-    --accent: 207 68% 53%; /* #3498DB */
-    --accent-foreground: 0 0% 98%; /* White text on accent */
+    --accent: 190 100% 50%; /* Bright cyan/teal, e.g., #00E0FF */
+    --accent-foreground: 242 32% 10%; /* Dark text on bright accent for contrast */
 
     --destructive: 0 72% 51%; /* A standard red for destructive actions */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 251 30% 30%; /* Darker border for subtle separation */
-    --input: 251 30% 28%; /* Input background */
-    --ring: 207 68% 53%; /* Accent color for rings */
+    --border: 242 25% 25%; /* Darker border for subtle separation */
+    --input: 242 25% 22%; /* Input background */
+    --ring: 190 100% 50%; /* Accent color for rings */
 
     --radius: 0.5rem;
 
-    /* Sidebar specific colors - can be same as main theme or slightly different */
-    --sidebar-background: 251 41% 15%; /* Slightly darker than main background */
+    /* Sidebar specific colors */
+    --sidebar-background: 242 32% 8%; /* Slightly darker than main background */
     --sidebar-foreground: 0 0% 80%;
-    --sidebar-primary: 249 79% 60%;
+    --sidebar-primary: 269 100% 50%; /* Same as main primary */
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 207 68% 53%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 251 41% 25%;
-    --sidebar-ring: 207 68% 53%;
+    --sidebar-accent: 190 100% 50%; /* Same as main accent */
+    --sidebar-accent-foreground: 242 32% 10%; /* Dark text on bright accent */
+    --sidebar-border: 242 25% 20%;
+    --sidebar-ring: 190 100% 50%;
   }
 
   .dark {
-    /* Keeping dark theme consistent with root, but can be customized if needed */
-    --background: 251 41% 17%;
+    --background: 242 32% 10%;
     --foreground: 0 0% 98%;
-    --card: 251 41% 22%;
+    --card: 242 30% 15%;
     --card-foreground: 0 0% 98%;
-    --popover: 251 41% 20%;
+    --popover: 242 30% 13%;
     --popover-foreground: 0 0% 98%;
-    --primary: 249 79% 60%;
+    --primary: 269 100% 50%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 251 30% 35%;
+    --secondary: 269 60% 35%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 251 30% 25%;
+    --muted: 242 25% 20%;
     --muted-foreground: 0 0% 60%;
-    --accent: 207 68% 53%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 190 100% 50%;
+    --accent-foreground: 242 32% 10%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 251 30% 30%;
-    --input: 251 30% 28%;
-    --ring: 207 68% 53%;
+    --border: 242 25% 25%;
+    --input: 242 25% 22%;
+    --ring: 190 100% 50%;
 
-    --sidebar-background: 251 41% 15%;
+    --sidebar-background: 242 32% 8%;
     --sidebar-foreground: 0 0% 80%;
-    --sidebar-primary: 249 79% 60%;
+    --sidebar-primary: 269 100% 50%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 207 68% 53%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 251 41% 25%;
-    --sidebar-ring: 207 68% 53%;
+    --sidebar-accent: 190 100% 50%;
+    --sidebar-accent-foreground: 242 32% 10%;
+    --sidebar-border: 242 25% 20%;
+    --sidebar-ring: 190 100% 50%;
   }
 }
 
@@ -90,8 +89,8 @@
 
 /* Glassmorphism effect helper */
 .glassmorphism {
-  background: rgba(255, 255, 255, 0.1); /* Adjust alpha for transparency */
+  background: rgba(255, 255, 255, 0.05); /* Adjusted for darker theme */
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Adjusted for darker theme */
 }
