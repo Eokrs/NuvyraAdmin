@@ -8,7 +8,7 @@ import type { ProductFormData } from "@/types";
 
 const ProductSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório."),
-  description: z.string().nullable(),
+  description: z.string().max(500, "A descrição não pode exceder 500 caracteres.").nullable().optional(),
   image: z.string().min(1, "URL da Imagem é obrigatória.").url("URL da imagem inválida."),
   category: z.string().min(1, "Categoria é obrigatória."),
   is_active: z.boolean(),
@@ -26,7 +26,7 @@ export async function createProductAction(formData: ProductFormData) {
   const validatedFields = ProductSchema.safeParse(formData);
   if (!validatedFields.success) {
     return {
-      error: "Erro de validação: " + validatedFields.error.flatten().fieldErrors,
+      error: "Erro de validação: " + JSON.stringify(validatedFields.error.flatten().fieldErrors),
     };
   }
 
@@ -39,7 +39,7 @@ export async function createProductAction(formData: ProductFormData) {
     .from("products")
     .insert([{ 
       name, 
-      description, 
+      description: description ?? null, 
       image, 
       category: normalizedCat, 
       is_active, 
@@ -75,7 +75,7 @@ export async function updateProductAction(id: string, formData: ProductFormData)
     .from("products")
     .update({ 
       name, 
-      description, 
+      description: description ?? null, 
       image, 
       category: normalizedCat, 
       is_active, 
