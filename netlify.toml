@@ -1,0 +1,20 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# The Netlify Next.js plugin (@netlify/plugin-nextjs) is usually
+# automatically detected and applied during the build process on Netlify.
+# This plugin handles the necessary configurations to deploy Next.js
+# features like SSR, ISR, Image Optimization, and Middleware correctly.
+
+# If you need to specify a Node.js version, you can uncomment and set it below.
+# Netlify typically uses a recent LTS version by default.
+# [build.environment]
+#   NODE_VERSION = "18" # Or your preferred Node.js LTS version
+
+# If you have specific redirect or rewrite rules, you can define them here.
+# For most Next.js apps, the plugin handles routing.
+# [[redirects]]
+#  from = "/old-path"
+#  to = "/new-path"
+#  status = 301
