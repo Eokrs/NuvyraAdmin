@@ -5,6 +5,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ProductFormData } from "@/types";
+import { convertToImgurUrl } from "@/lib/image-utils";
 
 const ProductSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório."),
@@ -29,16 +30,23 @@ export async function createProductAction(formData: ProductFormData) {
     };
   }
 
-  const { name, description, image, category, is_active } = validatedFields.data;
+  const { name, description, category, is_active } = validatedFields.data;
+  let originalImageUrl = validatedFields.data.image;
+  let finalImageUrl = originalImageUrl;
+
+  if (originalImageUrl.startsWith('https://jmdy.shop')) {
+    finalImageUrl = await convertToImgurUrl(originalImageUrl);
+  }
+  
   const normalizedCat = normalizeCategory(category);
   
   const productDataToInsert = { 
     name,
     description: description ?? null, 
-    image,
+    image: finalImageUrl,
     category: normalizedCat, 
     is_active,
-    created_at: new Date().toISOString() // Changed to full ISO timestamp
+    created_at: new Date().toISOString()
   };
 
   const { data, error } = await supabase
@@ -53,7 +61,17 @@ export async function createProductAction(formData: ProductFormData) {
   }
 
   revalidatePath("/admin/products");
-  return { success: true, message: "Produto criado com sucesso!", product: data };
+  
+  let successMessage = "Produto criado com sucesso!";
+  if (finalImageUrl !== originalImageUrl) {
+      successMessage = "Produto criado e imagem convertida para Imgur com sucesso!";
+  } else if (originalImageUrl.startsWith('https://jmdy.shop') && finalImageUrl === originalImageUrl && process.env.IMGUR_CLIENT_ID) {
+      successMessage = "Produto criado com sucesso! (Falha ao converter imagem para Imgur, URL original mantida)";
+  } else if (originalImageUrl.startsWith('https://jmdy.shop') && !process.env.IMGUR_CLIENT_ID) {
+      successMessage = "Produto criado com sucesso! (Conversão para Imgur não realizada: IMGUR_CLIENT_ID não configurado)";
+  }
+
+  return { success: true, message: successMessage, product: data };
 }
 
 export async function updateProductAction(id: string, formData: ProductFormData) {
@@ -66,14 +84,21 @@ export async function updateProductAction(id: string, formData: ProductFormData)
     };
   }
   
-  const { name, description, image, category, is_active: isActiveValue } = validatedFields.data;
+  const { name, description, category } = validatedFields.data;
+  const isActiveValue = Boolean(formData.is_active); // Ensure boolean
+  let originalImageUrl = validatedFields.data.image;
+  let finalImageUrl = originalImageUrl;
+
+  if (originalImageUrl.startsWith('https://jmdy.shop')) {
+    finalImageUrl = await convertToImgurUrl(originalImageUrl);
+  }
+  
   const normalizedCat = normalizeCategory(category);
 
-  // Note: created_at is not updated here, which is typically the desired behavior.
   const productDataToUpdate = { 
     name: name,
     description: description ?? null,
-    image: image,
+    image: finalImageUrl,
     category: normalizedCat,
     is_active: isActiveValue,
   };
@@ -92,7 +117,17 @@ export async function updateProductAction(id: string, formData: ProductFormData)
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/edit/${id}`);
-  return { success: true, message: "Produto atualizado com sucesso!", product: data };
+
+  let successMessage = "Produto atualizado com sucesso!";
+  if (finalImageUrl !== originalImageUrl) {
+      successMessage = "Produto atualizado e imagem convertida para Imgur com sucesso!";
+  } else if (originalImageUrl.startsWith('https://jmdy.shop') && finalImageUrl === originalImageUrl && process.env.IMGUR_CLIENT_ID) {
+      successMessage = "Produto atualizado com sucesso! (Falha ao converter imagem para Imgur, URL original mantida)";
+  } else if (originalImageUrl.startsWith('https://jmdy.shop') && !process.env.IMGUR_CLIENT_ID) {
+      successMessage = "Produto atualizado com sucesso! (Conversão para Imgur não realizada: IMGUR_CLIENT_ID não configurado)";
+  }
+
+  return { success: true, message: successMessage, product: data };
 }
 
 export async function deleteProductAction(id: string) {
