@@ -38,7 +38,6 @@ const productFormSchema = z.object({
     message: "A categoria é obrigatória.",
   }),
   is_active: z.boolean().default(true),
-  is_visible: z.boolean().default(true),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -60,7 +59,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
         image: initialData.image || "",
         category: initialData.category || "",
         is_active: initialData.is_active,
-        is_visible: initialData.is_visible,
       }
     : {
         name: "",
@@ -68,7 +66,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
         image: "",
         category: "",
         is_active: true,
-        is_visible: true,
       };
 
   const form = useForm<ProductFormValues>({
@@ -89,7 +86,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
         image: data.image,
         category: data.category,
         is_active: data.is_active,
-        is_visible: data.is_visible,
       };
 
       let result;
@@ -223,50 +219,29 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="is_active"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm bg-input/30">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Produto Ativo</FormLabel>
-                      <FormDescription>
-                        Define se o produto está disponível para venda.
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="is_visible"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm bg-input/30">
-                    <FormControl>
-                       <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Produto Visível</FormLabel>
-                      <FormDescription>
-                        Define se o produto aparece na vitrine da loja.
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
-            </div>
+            
+            <FormField
+              control={form.control}
+              name="is_active"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm bg-input/30">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Produto Ativo</FormLabel>
+                    <FormDescription>
+                      Define se o produto está disponível para venda.
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+            
             <div className="flex justify-end pt-6">
               <Button type="submit" disabled={loading} className="min-w-[150px] bg-primary hover:bg-primary/90 text-primary-foreground">
                 {loading ? (
@@ -283,4 +258,3 @@ export function ProductForm({ initialData }: ProductFormProps) {
     </Card>
   );
 }
-

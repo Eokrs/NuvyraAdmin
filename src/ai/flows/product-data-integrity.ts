@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -21,7 +22,6 @@ const CorrectProductDataInputSchema = z.object({
       category: z.string().nullable().describe('Category of the product'),
       datahint: z.string().nullable().describe('Unused field'),
       is_active: z.boolean().describe('Whether the product is active'),
-      is_visible: z.boolean().describe('Whether the product is visible'),
       created_at: z.string().nullable().describe('Year of creation'),
     })
   ).describe('Array of product objects to check for data integrity'),
@@ -38,7 +38,6 @@ const CorrectProductDataOutputSchema = z.object({
       category: z.string().describe('Category of the product'),
       datahint: z.string().nullable().describe('Unused field'),
       is_active: z.boolean().describe('Whether the product is active'),
-      is_visible: z.boolean().describe('Whether the product is visible'),
       created_at: z.string().nullable().describe('Year of creation'),
     })
   ).describe('Array of corrected product objects'),
@@ -64,7 +63,6 @@ const prompt = ai.definePrompt({
   Image: {{this.image}}
   Category: {{this.category}}
   Is Active: {{this.is_active}}
-  Is Visible: {{this.is_visible}}
   Created At: {{this.created_at}}
   \n---\n{{/each}}
 
@@ -73,7 +71,7 @@ const prompt = ai.definePrompt({
   - All products have a non-null and non-empty image URL.
   - All products have a non-null and non-empty category, trimmed and in uppercase.
   - If any field is missing, fill it with a default value (e.g., "Unknown" for missing strings).
-  - is_active and is_visible is a boolean, default to true if null
+  - is_active is a boolean, default to true if null
 
   Also, provide a summary of the corrections you made.
 

@@ -26,9 +26,8 @@ export async function fetchAndCorrectDataAction(): Promise<{ data?: { originalPr
       description: p.description,
       image: p.image,
       category: p.category,
-      datahint: p.datahint, // include even if unused, as per schema
+      datahint: p.datahint, 
       is_active: p.is_active,
-      is_visible: p.is_visible,
       created_at: p.created_at,
     }))
   };
@@ -49,15 +48,9 @@ export async function applyCorrectedDataAction(correctedProducts: Product[]): Pr
 
   const supabase = createSupabaseServerClient();
   let updatedCount = 0;
-
-  // Supabase doesn't have a direct batch update for different rows with different values in a single call easily like upsert.
-  // We'll update them one by one or use a stored procedure if performance becomes an issue for very large batches.
-  // For moderate numbers, individual updates in a loop are acceptable.
   
   const updatePromises = correctedProducts.map(product => {
-    // Ensure boolean fields are actual booleans
     const isActive = typeof product.is_active === 'string' ? product.is_active.toLowerCase() === 'true' : Boolean(product.is_active);
-    const isVisible = typeof product.is_visible === 'string' ? product.is_visible.toLowerCase() === 'true' : Boolean(product.is_visible);
     
     return supabase
       .from("products")
@@ -67,9 +60,7 @@ export async function applyCorrectedDataAction(correctedProducts: Product[]): Pr
         image: product.image,
         category: product.category,
         is_active: isActive,
-        is_visible: isVisible,
         created_at: product.created_at,
-        // datahint is not typically updated unless AI suggests it.
       })
       .eq("id", product.id);
   });

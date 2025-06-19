@@ -17,7 +17,7 @@ import Image from 'next/image';
 interface CorrectionDetail {
   id: string;
   original: Product;
-  corrected: Product;
+  corrected: Omit<Product, 'is_visible'> & { is_visible?: boolean }; // Allow corrected to potentially have it from AI, but it's ignored
   changes: string[];
 }
 
@@ -39,17 +39,27 @@ export default function DataIntegrityPage() {
         } else if (result.data) {
           setScanResult(result.data.aiOutput);
           
-          // Compute detailed changes
           const details: CorrectionDetail[] = [];
-          result.data.aiOutput.correctedProductData.forEach(correctedProd => {
+          result.data.aiOutput.correctedProductData.forEach(correctedProdUntyped => {
+            // Cast to ensure we handle potential extra fields from AI, but focus on Product type
+            const correctedProd = correctedProdUntyped as Omit<Product, 'is_visible'> & { is_visible?: boolean };
             const originalProd = result.data.originalProducts.find(p => p.id === correctedProd.id);
             if (originalProd) {
               const changes: string[] = [];
-              (Object.keys(correctedProd) as Array<keyof Product>).forEach(key => {
-                if (originalProd[key] !== correctedProd[key]) {
-                  changes.push(`${key}: '${originalProd[key] || "N/A"}' -> '${correctedProd[key] || "N/A"}'`);
+              // Iterate over keys present in originalProd (which conforms to Product without is_visible)
+              (Object.keys(originalProd) as Array<keyof Product>).forEach(key => {
+                // Check if the key also exists in correctedProd before comparison
+                if (key in correctedProd && originalProd[key] !== correctedProd[key as keyof typeof correctedProd]) {
+                   changes.push(`${key}: '${originalProd[key] || "N/A"}' -> '${correctedProd[key as keyof typeof correctedProd] || "N/A"}'`);
                 }
               });
+               // Special check for is_active as it's boolean
+              if ('is_active' in correctedProd && originalProd.is_active !== correctedProd.is_active) {
+                if (!changes.some(c => c.startsWith('is_active:'))) { // Avoid duplicate
+                  changes.push(`is_active: '${originalProd.is_active}' -> '${correctedProd.is_active}'`);
+                }
+              }
+
               if (changes.length > 0) {
                 details.push({ id: correctedProd.id, original: originalProd, corrected: correctedProd, changes });
               }
@@ -74,11 +84,15 @@ export default function DataIntegrityPage() {
     }
     startApplyTransition(async () => {
       try {
-        const productsToUpdate = detailedCorrections.map(dc => dc.corrected);
+        // Ensure we are only sending fields that exist in the Product type (without is_visible)
+        const productsToUpdate = detailedCorrections.map(dc => {
+          const { is_visible, ...restOfCorrected } = dc.corrected; // Exclude is_visible
+          return restOfCorrected as Product; // Cast to Product (which doesn't have is_visible)
+        });
         const result = await applyCorrectedDataAction(productsToUpdate);
         if (result.success) {
           toast({ title: "Correções Aplicadas", description: `${result.count} produtos atualizados com sucesso.` });
-          setScanResult(null); // Clear results after applying
+          setScanResult(null); 
           setDetailedCorrections([]);
         } else {
           toast({ title: "Erro ao Aplicar", description: result.error || "Falha ao aplicar correções.", variant: "destructive" });

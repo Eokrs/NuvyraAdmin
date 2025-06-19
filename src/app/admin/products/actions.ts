@@ -8,11 +8,12 @@ import type { ProductFormData } from "@/types";
 
 const ProductSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório."),
-  description: z.string().max(500, "A descrição não pode exceder 500 caracteres.").nullable().optional(),
+  description: z.string().max(500, {
+    message: "A descrição não pode exceder 500 caracteres.",
+  }).nullable().optional(),
   image: z.string().min(1, "URL da Imagem é obrigatória.").url("URL da imagem inválida."),
   category: z.string().min(1, "Categoria é obrigatória."),
   is_active: z.boolean(),
-  is_visible: z.boolean(),
 });
 
 // Helper function to normalize category
@@ -30,7 +31,7 @@ export async function createProductAction(formData: ProductFormData) {
     };
   }
 
-  const { name, description, image, category, is_active, is_visible } = validatedFields.data;
+  const { name, description, image, category, is_active } = validatedFields.data;
   
   const normalizedCat = normalizeCategory(category);
   const currentYear = new Date().getFullYear().toString();
@@ -41,7 +42,6 @@ export async function createProductAction(formData: ProductFormData) {
     image, 
     category: normalizedCat, 
     is_active, 
-    is_visible,
     created_at: currentYear
   };
 
@@ -72,7 +72,7 @@ export async function updateProductAction(id: string, formData: ProductFormData)
     };
   }
   
-  const { name, description, image, category, is_active, is_visible } = validatedFields.data;
+  const { name, description, image, category, is_active } = validatedFields.data;
   const normalizedCat = normalizeCategory(category);
 
   const productDataToUpdate = { 
@@ -80,8 +80,7 @@ export async function updateProductAction(id: string, formData: ProductFormData)
     description: description ?? null, 
     image, 
     category: normalizedCat, 
-    is_active, 
-    is_visible 
+    is_active 
   };
 
   console.log("Updating product ID", id, "with data:", productDataToUpdate);
@@ -104,11 +103,11 @@ export async function updateProductAction(id: string, formData: ProductFormData)
 }
 
 export async function deleteProductAction(id: string) {
-  // Soft delete: set is_active to false and is_visible to false
+  // Soft delete: set is_active to false
   const supabase = createSupabaseServerClient();
   const { error } = await supabase
     .from("products")
-    .update({ is_active: false, is_visible: false })
+    .update({ is_active: false })
     .eq("id", id);
 
   if (error) {
@@ -117,10 +116,13 @@ export async function deleteProductAction(id: string) {
   }
 
   revalidatePath("/admin/products");
-  return { success: true, message: "Produto 'deletado' (inativado e oculto) com sucesso." };
+  return { success: true, message: "Produto 'deletado' (inativado) com sucesso." };
 }
 
-export async function toggleProductStatusAction(id: string, field: 'is_active' | 'is_visible', value: boolean) {
+export async function toggleProductStatusAction(id: string, field: 'is_active', value: boolean) {
+  if (field !== 'is_active') {
+    return { error: "Campo inválido para alternar status." };
+  }
   const supabase = createSupabaseServerClient();
   const { error } = await supabase
     .from("products")
@@ -141,7 +143,7 @@ export async function bulkDeleteProductsAction(productIds: string[]) {
   const supabase = createSupabaseServerClient();
   const { error } = await supabase
     .from("products")
-    .update({ is_active: false, is_visible: false })
+    .update({ is_active: false })
     .in("id", productIds);
 
   if (error) {
@@ -156,7 +158,7 @@ export async function bulkToggleProductStatusAction(productIds: string[], isActi
   const supabase = createSupabaseServerClient();
   const { error } = await supabase
     .from("products")
-    .update({ is_active: isActive }) // This could be expanded to toggle is_visible too if needed
+    .update({ is_active: isActive })
     .in("id", productIds);
   
   if (error) {

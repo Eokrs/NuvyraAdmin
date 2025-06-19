@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, Edit3, Trash2, Eye, EyeOff, ToggleLeft, ToggleRight } from 'lucide-react';
+import { MoreHorizontal, Edit3, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 import type { Product } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { deleteProductAction, toggleProductStatusAction } from '../actions';
@@ -41,7 +41,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   const handleDelete = async () => {
     const result = await deleteProductAction(product.id);
     if (result.success) {
-      toast({ title: "Produto 'deletado'", description: "O produto foi marcado como inativo e não visível." });
+      toast({ title: "Produto 'deletado'", description: "O produto foi marcado como inativo." });
       router.refresh(); // Refresh data on the page
     } else {
       toast({ title: "Erro ao 'deletar'", description: result.error, variant: "destructive" });
@@ -49,12 +49,12 @@ export function ProductActions({ product }: ProductActionsProps) {
     setIsDeleteDialogOpen(false);
   };
 
-  const handleToggleStatus = async (field: 'is_active' | 'is_visible') => {
+  const handleToggleIsActive = async () => {
     setIsStatusToggling(true);
-    const newValue = !product[field];
-    const result = await toggleProductStatusAction(product.id, field, newValue);
+    const newValue = !product.is_active;
+    const result = await toggleProductStatusAction(product.id, 'is_active', newValue);
     if (result.success) {
-      toast({ title: "Status atualizado!", description: `Produto ${product.name} ${field === 'is_active' ? (newValue ? 'ativado' : 'desativado') : (newValue ? 'tornado visível' : 'tornado oculto')}.` });
+      toast({ title: "Status atualizado!", description: `Produto ${product.name} ${newValue ? 'ativado' : 'desativado'}.` });
       router.refresh();
     } else {
       toast({ title: "Erro ao atualizar status", description: result.error, variant: "destructive" });
@@ -81,21 +81,13 @@ export function ProductActions({ product }: ProductActionsProps) {
               Editar
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleToggleStatus('is_active')} disabled={isStatusToggling} className="cursor-pointer">
+          <DropdownMenuItem onClick={handleToggleIsActive} disabled={isStatusToggling} className="cursor-pointer">
             {product.is_active ? (
               <ToggleLeft className="mr-2 h-4 w-4 text-red-400" />
             ) : (
               <ToggleRight className="mr-2 h-4 w-4 text-green-400" />
             )}
             {product.is_active ? 'Desativar' : 'Ativar'}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleToggleStatus('is_visible')} disabled={isStatusToggling} className="cursor-pointer">
-            {product.is_visible ? (
-              <EyeOff className="mr-2 h-4 w-4 text-gray-400" />
-            ) : (
-              <Eye className="mr-2 h-4 w-4 text-sky-400" />
-            )}
-            {product.is_visible ? 'Ocultar' : 'Mostrar'}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer">
@@ -110,7 +102,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar "Deleção"</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja "deletar" o produto "{product.name}"? Esta ação irá marcar o produto como inativo e não visível.
+              Tem certeza que deseja "deletar" o produto "{product.name}"? Esta ação irá marcar o produto como inativo.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -124,4 +116,3 @@ export function ProductActions({ product }: ProductActionsProps) {
     </>
   );
 }
-

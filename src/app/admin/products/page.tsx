@@ -10,7 +10,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 export const revalidate = 0; // Disable caching for this page
 
 async function getProducts(
-  filters: { category?: string; isActive?: string; isVisible?: string },
+  filters: { category?: string; isActive?: string; },
   sortBy: string = 'name',
   sortOrder: 'asc' | 'desc' = 'asc'
 ): Promise<Product[]> {
@@ -23,12 +23,7 @@ async function getProducts(
   if (filters.isActive !== undefined) {
     query = query.eq('is_active', filters.isActive === 'true');
   }
-  if (filters.isVisible !== undefined) {
-    query = query.eq('is_visible', filters.isVisible === 'true');
-  }
   
-  // created_at is a string representing year, direct sorting might be tricky if not padded.
-  // For now, assuming name and a simple created_at sort.
   const sortField = sortBy === 'created_at' ? 'created_at' : 'name';
   query = query.order(sortField, { ascending: sortOrder === 'asc' });
 
@@ -45,7 +40,6 @@ interface ProductsPageProps {
   searchParams: {
     category?: string;
     isActive?: string;
-    isVisible?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
   };
@@ -55,16 +49,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const filters = {
     category: searchParams.category,
     isActive: searchParams.isActive,
-    isVisible: searchParams.isVisible,
   };
   const products = await getProducts(filters, searchParams.sortBy, searchParams.sortOrder);
 
-  // For category filter, get unique categories
   const supabase = createSupabaseServerClient();
   const { data: categoriesData, error: categoriesError } = await supabase
     .from('products')
     .select('category')
-    .neq('category', ''); // Filter out empty strings
+    .neq('category', ''); 
     
   let uniqueCategories: string[] = [];
   if (categoriesData && !categoriesError) {

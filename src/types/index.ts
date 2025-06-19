@@ -7,7 +7,6 @@ export interface Product {
   category: string | null;
   datahint?: string | null; // Marked as unused
   is_active: boolean;
-  is_visible: boolean;
   created_at: string | null; // Year as string or int as string
 }
 
@@ -18,7 +17,6 @@ export type ProductFormData = {
   image: string;
   category: string;
   is_active: boolean;
-  is_visible: boolean;
   // created_at will be set automatically or is not typically part of create/edit form directly by user
 };
 

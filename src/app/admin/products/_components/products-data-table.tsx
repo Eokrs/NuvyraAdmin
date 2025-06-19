@@ -187,19 +187,6 @@ export function ProductsDataTable<TData extends Product, TValue>({
             <SelectItem value="false">Inativo</SelectItem>
           </SelectContent>
         </Select>
-        <Select
-          value={searchParams.get('isVisible') || ""}
-          onValueChange={(value) => updateQueryParam('isVisible', value === 'all' ? null : value)}
-        >
-          <SelectTrigger className="w-[130px] h-10 bg-input/50 focus:bg-input/70">
-            <SelectValue placeholder="Status Visível" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="true">Visível</SelectItem>
-            <SelectItem value="false">Oculto</SelectItem>
-          </SelectContent>
-        </Select>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-10 ml-auto">
@@ -224,7 +211,6 @@ export function ProductsDataTable<TData extends Product, TValue>({
                      column.id === 'image' ? 'Imagem' : 
                      column.id === 'category' ? 'Categoria' :
                      column.id === 'is_active' ? 'Ativo' :
-                     column.id === 'is_visible' ? 'Visível' :
                      column.id === 'created_at' ? 'Criado em' :
                      column.id}
                   </DropdownMenuCheckboxItem>
@@ -341,7 +327,7 @@ export function ProductsDataTable<TData extends Product, TValue>({
               Você tem certeza que deseja{' '}
               {bulkActionType === 'delete' ? 'deletar' : bulkActionType === 'activate' ? 'ativar' : 'desativar'}{' '}
               os {table.getFilteredSelectedRowModel().rows.length} produtos selecionados?
-              {bulkActionType === 'delete' && " Esta ação marcará os produtos como inativos e não visíveis, e não poderá ser desfeita facilmente."}
+              {bulkActionType === 'delete' && " Esta ação marcará os produtos como inativos, e não poderá ser desfeita facilmente."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
