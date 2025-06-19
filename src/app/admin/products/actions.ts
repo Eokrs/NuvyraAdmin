@@ -35,17 +35,21 @@ export async function createProductAction(formData: ProductFormData) {
   const normalizedCat = normalizeCategory(category);
   const currentYear = new Date().getFullYear().toString();
 
+  const productDataToInsert = { 
+    name, 
+    description: description ?? null, 
+    image, 
+    category: normalizedCat, 
+    is_active, 
+    is_visible,
+    created_at: currentYear
+  };
+
+  console.log("Creating product with data:", productDataToInsert);
+
   const { data, error } = await supabase
     .from("products")
-    .insert([{ 
-      name, 
-      description: description ?? null, 
-      image, 
-      category: normalizedCat, 
-      is_active, 
-      is_visible,
-      created_at: currentYear // Set created_at to current year
-    }])
+    .insert([productDataToInsert])
     .select()
     .single();
 
@@ -71,16 +75,20 @@ export async function updateProductAction(id: string, formData: ProductFormData)
   const { name, description, image, category, is_active, is_visible } = validatedFields.data;
   const normalizedCat = normalizeCategory(category);
 
+  const productDataToUpdate = { 
+    name, 
+    description: description ?? null, 
+    image, 
+    category: normalizedCat, 
+    is_active, 
+    is_visible 
+  };
+
+  console.log("Updating product ID", id, "with data:", productDataToUpdate);
+
   const { data, error } = await supabase
     .from("products")
-    .update({ 
-      name, 
-      description: description ?? null, 
-      image, 
-      category: normalizedCat, 
-      is_active, 
-      is_visible 
-    })
+    .update(productDataToUpdate)
     .eq("id", id)
     .select()
     .single();
