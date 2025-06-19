@@ -2,8 +2,6 @@
 "use client";
 
 import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import { LogIn, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext'; // Import useAuth
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -20,27 +18,39 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { user: authUser, loading: authLoading } = useAuth(); // Get user and loading state from context
+  const { user: authUser, loading: authLoading, signInWithEmail } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({
-        title: "Login bem-sucedido!",
-        description: "Redirecionando para o painel...",
-      });
-      // AuthContext will handle redirect via its useEffect
-    } catch (err: any) {
-      console.error("Firebase Auth Error:", err);
-      let errorMessage = "Falha ao fazer login. Verifique suas credenciais.";
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        errorMessage = "Email ou senha inválidos.";
-      } else if (err.code === 'auth/invalid-email') {
-        errorMessage = "Formato de email inválido.";
+      const { error: signInError } = await signInWithEmail(email, password);
+      if (signInError) {
+        let errorMessage = "Falha ao fazer login. Verifique suas credenciais.";
+        // Supabase error codes might differ, adjust as needed
+        // Example: if (signInError.message.includes("Invalid login credentials"))
+        if (signInError.message.toLowerCase().includes('invalid login credentials')) {
+           errorMessage = "Email ou senha inválidos.";
+        } else if (signInError.message.toLowerCase().includes('email not confirmed')) {
+            errorMessage = "Por favor, confirme seu email antes de fazer login.";
+        }
+        setError(errorMessage);
+        toast({
+          title: "Erro de Login",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login bem-sucedido!",
+          description: "Redirecionando para o painel...",
+        });
+        // AuthContext will handle redirect via its useEffect or onAuthStateChange
       }
+    } catch (err: any) {
+      console.error("Login Page Error:", err);
+      const errorMessage = "Ocorreu um erro inesperado durante o login.";
       setError(errorMessage);
       toast({
         title: "Erro de Login",
@@ -52,15 +62,12 @@ export default function LoginPage() {
     }
   };
   
-  // If auth is still loading or user is already authenticated, don't render form
-  // (AuthContext handles redirection, this is an additional safeguard or could show a loader)
   if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen"><LogIn className="h-8 w-8 animate-pulse text-primary" /></div>;
   }
-  if (authUser) {
-     // This case should ideally be handled by AuthContext redirecting away from /login
-    return <div className="flex items-center justify-center min-h-screen">Redirecionando...</div>;
-  }
+  // AuthContext handles redirection if user is already authenticated
+  // So, if we reach here and authUser exists, it's likely a brief moment before redirection
+  // or a state mismatch. Rely on AuthContext's useEffect for consistent redirection.
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-primary/20 p-4">
@@ -106,7 +113,7 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading || authLoading}>
               {loading ? (
                 <>
                   <LogIn className="w-4 h-4 mr-2 animate-spin" />

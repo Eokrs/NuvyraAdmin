@@ -1,24 +1,23 @@
 
 "use server";
 
-import { cookies } from 'next/headers';
-
-const AUTH_COOKIE_NAME = 'firebaseAuthToken';
+// Supabase SSR library handles cookie management automatically
+// when using createServerClient and createBrowserClient.
+// These custom cookie actions are no longer needed for Firebase tokens.
+// This file can be removed if no other auth-related server actions are added.
 
 export async function setAuthCookie(token: string) {
-  cookies().set(AUTH_COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-  });
+  // No longer needed for Supabase, session handled by @supabase/ssr
+  console.warn("setAuthCookie called, but it's deprecated with Supabase auth.");
 }
 
 export async function deleteAuthCookie() {
-  cookies().delete(AUTH_COOKIE_NAME);
+  // No longer needed for Supabase, session handled by @supabase/ssr
+  console.warn("deleteAuthCookie called, but it's deprecated with Supabase auth.");
 }
 
 export async function getAuthCookie() {
-  return cookies().get(AUTH_COOKIE_NAME)?.value;
+  // No longer needed for Supabase, session handled by @supabase/ssr
+  console.warn("getAuthCookie called, but it's deprecated with Supabase auth.");
+  return null;
 }

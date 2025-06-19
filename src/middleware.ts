@@ -1,39 +1,85 @@
 
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-
-const AUTH_COOKIE_NAME = 'firebaseAuthToken';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          });
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          });
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          });
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          });
+        },
+      },
+    }
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
-  const authToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
   const isAuthPage = pathname === '/login';
   const isAdminRoute = pathname.startsWith('/admin');
 
   if (isAdminRoute) {
-    if (!authToken) {
-      // Redirect to login if trying to access admin routes without token
+    if (!user) {
       const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname); // Optional: redirect back after login
+      loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
-    // If token exists, assume it's valid. Server-side validation can be added if needed.
   } else if (isAuthPage) {
-    if (authToken) {
-      // Redirect to admin dashboard if trying to access login page with token
+    if (user) {
       return NextResponse.redirect(new URL('/admin/products', request.url));
     }
   } else if (pathname === '/') {
-     if (authToken) {
+    if (user) {
       return NextResponse.redirect(new URL('/admin/products', request.url));
     } else {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
-
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
