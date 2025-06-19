@@ -37,7 +37,7 @@ const productFormSchema = z.object({
   category: z.string().min(1, {
     message: "A categoria é obrigatória.",
   }),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean(), // Removido .default(true)
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -58,14 +58,14 @@ export function ProductForm({ initialData }: ProductFormProps) {
         description: initialData.description || "",
         image: initialData.image || "",
         category: initialData.category || "",
-        is_active: initialData.is_active,
+        is_active: Boolean(initialData.is_active), // Explicitamente cast para boolean
       }
     : {
         name: "",
         description: "",
         image: "",
         category: "",
-        is_active: true,
+        is_active: true, // Default para novos produtos
       };
 
   const form = useForm<ProductFormValues>({

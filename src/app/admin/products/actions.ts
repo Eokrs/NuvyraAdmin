@@ -31,21 +31,16 @@ export async function createProductAction(formData: ProductFormData) {
     };
   }
 
-  const { name, description, image, category, is_active } = validatedFields.data;
-  
+  const { category, ...restOfData } = validatedFields.data;
   const normalizedCat = normalizeCategory(category);
   const currentYear = new Date().getFullYear().toString();
 
   const productDataToInsert = { 
-    name, 
-    description: description ?? null, 
-    image, 
+    ...restOfData,
+    description: restOfData.description ?? null, 
     category: normalizedCat, 
-    is_active, 
     created_at: currentYear
   };
-
-  console.log("Creating product with data:", productDataToInsert);
 
   const { data, error } = await supabase
     .from("products")
@@ -72,18 +67,14 @@ export async function updateProductAction(id: string, formData: ProductFormData)
     };
   }
   
-  const { name, description, image, category, is_active } = validatedFields.data;
+  const { category, ...restOfData } = validatedFields.data;
   const normalizedCat = normalizeCategory(category);
 
   const productDataToUpdate = { 
-    name, 
-    description: description ?? null, 
-    image, 
-    category: normalizedCat, 
-    is_active 
+    ...restOfData,
+    description: restOfData.description ?? null,
+    category: normalizedCat,
   };
-
-  console.log("Updating product ID", id, "with data:", productDataToUpdate);
 
   const { data, error } = await supabase
     .from("products")
