@@ -26,6 +26,7 @@ export async function fetchAndCorrectDataAction(): Promise<{ data?: { originalPr
       description: p.description,
       image: p.image,
       category: p.category,
+      price: p.price, // Include price
       datahint: p.datahint, 
       is_active: p.is_active,
       created_at: p.created_at,
@@ -59,6 +60,7 @@ export async function applyCorrectedDataAction(correctedProducts: Product[]): Pr
         description: product.description,
         image: product.image,
         category: product.category,
+        price: product.price, // Include price
         is_active: isActive,
         created_at: product.created_at,
       })

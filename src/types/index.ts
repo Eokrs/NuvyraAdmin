@@ -5,7 +5,8 @@ export interface Product {
   description: string | null;
   image: string | null;
   category: string | null;
-  datahint?: string | null; 
+  price: number | null; // Added price field
+  datahint?: string | null;
   is_active: boolean;
   created_at: string | null; // ISO 8601 timestamp string
 }
@@ -16,6 +17,7 @@ export type ProductFormData = {
   description?: string;
   image: string;
   category: string;
+  price: number; // Added price field
   is_active: boolean;
   // created_at will be set automatically or is not typically part of create/edit form directly by user
 };

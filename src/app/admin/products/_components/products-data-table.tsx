@@ -199,6 +199,14 @@ export function ProductsDataTable<TData extends Product, TValue>({
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
+                let columnName = column.id;
+                if (column.id === 'name') columnName = 'Nome';
+                else if (column.id === 'image') columnName = 'Imagem';
+                else if (column.id === 'category') columnName = 'Categoria';
+                else if (column.id === 'price') columnName = 'Preço';
+                else if (column.id === 'is_active') columnName = 'Ativo';
+                else if (column.id === 'created_at') columnName = 'Criado em';
+
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -208,12 +216,7 @@ export function ProductsDataTable<TData extends Product, TValue>({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id === 'name' ? 'Nome' : 
-                     column.id === 'image' ? 'Imagem' : 
-                     column.id === 'category' ? 'Categoria' :
-                     column.id === 'is_active' ? 'Ativo' :
-                     column.id === 'created_at' ? 'Criado em' :
-                     column.id}
+                    {columnName}
                   </DropdownMenuCheckboxItem>
                 );
               })}

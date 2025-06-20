@@ -18,6 +18,7 @@ const ProductDataSchema = z.object({
   description: z.string().nullable().describe('Description of the product'),
   image: z.string().nullable().describe('URL of the product image'),
   category: z.string().nullable().describe('Category of the product'),
+  price: z.number().nullable().describe('Price of the product'),
   datahint: z.string().nullable().describe('Unused field'),
   is_active: z.boolean().describe('Whether the product is active'),
   created_at: z.string().datetime({ message: "Invalid datetime string. Must be an ISO 8601 string." }).nullable().describe('ISO 8601 timestamp of creation.'),
@@ -29,6 +30,7 @@ const CorrectedProductDataSchema = z.object({
   description: z.string().nullable().describe('Description of the product'),
   image: z.string().describe('URL of the product image'),
   category: z.string().describe('Category of the product'),
+  price: z.number().describe('Price of the product, defaults to 0 if missing or invalid.'),
   datahint: z.string().nullable().describe('Unused field'),
   is_active: z.boolean().describe('Whether the product is active'),
   created_at: z.string().datetime({ message: "Invalid datetime string. Must be an ISO 8601 string." }).nullable().describe('ISO 8601 timestamp of creation. Should be preserved if valid, or set to null if invalid or missing.'),
@@ -54,7 +56,7 @@ const prompt = ai.definePrompt({
   name: 'correctProductDataPrompt',
   input: {schema: CorrectProductDataInputSchema},
   output: {schema: CorrectProductDataOutputSchema},
-  prompt: `You are an expert in data quality and consistency. You are provided with an array of product data objects. Your task is to identify and correct any inconsistencies in the data, such as null or empty values for name, image, or category. Also, standardize the category field by trimming whitespace and converting to uppercase.
+  prompt: `You are an expert in data quality and consistency. You are provided with an array of product data objects. Your task is to identify and correct any inconsistencies in the data, such as null or empty values for name, image, or category, and ensure price is a non-negative number. Also, standardize the category field by trimming whitespace and converting to uppercase.
 
   Here is the product data:
   {{#each productData}}
@@ -63,6 +65,7 @@ const prompt = ai.definePrompt({
   Description: {{this.description}}
   Image: {{this.image}}
   Category: {{this.category}}
+  Price: {{this.price}}
   Is Active: {{this.is_active}}
   Created At (ISO 8601 Timestamp): {{this.created_at}}
   \n---\n{{/each}}
@@ -71,6 +74,7 @@ const prompt = ai.definePrompt({
   - All products have a non-null and non-empty name. If name is missing, use "Unknown Product".
   - All products have a non-null and non-empty image URL. If image is missing, use "https://placehold.co/300x300.png".
   - All products have a non-null and non-empty category, trimmed and in uppercase. If category is missing, use "UNCATEGORIZED".
+  - All products have a non-negative price. If price is missing, null, or negative, set it to 0.
   - 'is_active' is a boolean; default to true if null or missing.
   - 'created_at' is an ISO 8601 timestamp string or null. Preserve valid timestamps. If 'created_at' is invalid or unparsable as an ISO 8601 timestamp, set it to null. Do not generate new timestamps for 'created_at'.
 

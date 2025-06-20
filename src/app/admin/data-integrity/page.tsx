@@ -17,9 +17,18 @@ import Image from 'next/image';
 interface CorrectionDetail {
   id: string;
   original: Product;
-  corrected: Omit<Product, 'is_visible'> & { is_visible?: boolean }; // Allow corrected to potentially have it from AI, but it's ignored
+  // Corrected type can be inferred from CorrectedProductDataSchema from the AI flow if needed,
+  // but for simplicity here, we'll assume it aligns with Product structure after correction
+  corrected: Product; 
   changes: string[];
 }
+
+const formatCurrency = (amount: number | null | undefined) => {
+  if (amount === null || amount === undefined) {
+    return "N/A";
+  }
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
+};
 
 export default function DataIntegrityPage() {
   const [isScanning, startScanTransition] = useTransition();
@@ -41,16 +50,20 @@ export default function DataIntegrityPage() {
           
           const details: CorrectionDetail[] = [];
           result.data.aiOutput.correctedProductData.forEach(correctedProdUntyped => {
-            // Cast to ensure we handle potential extra fields from AI, but focus on Product type
-            const correctedProd = correctedProdUntyped as Omit<Product, 'is_visible'> & { is_visible?: boolean };
+            const correctedProd = correctedProdUntyped as Product; // Cast to Product for simplicity
             const originalProd = result.data.originalProducts.find(p => p.id === correctedProd.id);
             if (originalProd) {
               const changes: string[] = [];
-              // Iterate over keys present in originalProd (which conforms to Product without is_visible)
+              // Iterate over keys present in originalProd (which conforms to Product)
               (Object.keys(originalProd) as Array<keyof Product>).forEach(key => {
-                // Check if the key also exists in correctedProd before comparison
                 if (key in correctedProd && originalProd[key] !== correctedProd[key as keyof typeof correctedProd]) {
-                   changes.push(`${key}: '${originalProd[key] || "N/A"}' -> '${correctedProd[key as keyof typeof correctedProd] || "N/A"}'`);
+                   let originalValue = originalProd[key];
+                   let correctedValue = correctedProd[key as keyof typeof correctedProd];
+                   if (key === 'price') {
+                     originalValue = formatCurrency(originalValue as number | null);
+                     correctedValue = formatCurrency(correctedValue as number | null);
+                   }
+                   changes.push(`${key}: '${originalValue ?? "N/A"}' -> '${correctedValue ?? "N/A"}'`);
                 }
               });
                // Special check for is_active as it's boolean
@@ -84,11 +97,7 @@ export default function DataIntegrityPage() {
     }
     startApplyTransition(async () => {
       try {
-        // Ensure we are only sending fields that exist in the Product type (without is_visible)
-        const productsToUpdate = detailedCorrections.map(dc => {
-          const { is_visible, ...restOfCorrected } = dc.corrected; // Exclude is_visible
-          return restOfCorrected as Product; // Cast to Product (which doesn't have is_visible)
-        });
+        const productsToUpdate = detailedCorrections.map(dc => dc.corrected as Product);
         const result = await applyCorrectedDataAction(productsToUpdate);
         if (result.success) {
           toast({ title: "Correções Aplicadas", description: `${result.count} produtos atualizados com sucesso.` });
@@ -170,7 +179,8 @@ export default function DataIntegrityPage() {
                         <TableCell>
                           <div className="font-medium">{item.corrected.name}</div>
                           <div className="text-xs text-muted-foreground">ID: {item.id}</div>
-                           <Badge variant="secondary" className="mt-1">{item.corrected.category}</Badge>
+                           <Badge variant="secondary" className="mt-1 mr-1">{item.corrected.category}</Badge>
+                           <Badge variant="outline" className="mt-1">{formatCurrency(item.corrected.price)}</Badge>
                         </TableCell>
                         <TableCell>
                           <ul className="list-disc list-inside space-y-1 text-sm">

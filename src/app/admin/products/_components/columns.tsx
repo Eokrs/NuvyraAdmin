@@ -11,6 +11,15 @@ import { ArrowUpDown } from "lucide-react";
 import { ProductActions } from "./product-actions";
 import { format } from 'date-fns'; // For formatting date
 
+// Helper function to format currency
+const formatCurrency = (amount: number | null | undefined) => {
+  if (amount === null || amount === undefined) {
+    return "N/A";
+  }
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
+};
+
+
 export const columns: ColumnDef<Product>[] = [
   {
     id: "select",
@@ -72,6 +81,25 @@ export const columns: ColumnDef<Product>[] = [
       );
     },
     cell: ({ row }) => <span className="font-medium">{row.getValue("name")}</span>,
+  },
+  {
+    accessorKey: "price",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-accent/10 px-2"
+        >
+          Preço
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const price = row.getValue("price") as number | null;
+      return <span className="font-mono">{formatCurrency(price)}</span>;
+    },
   },
   {
     accessorKey: "category",

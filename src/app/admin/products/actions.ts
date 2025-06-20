@@ -12,6 +12,7 @@ const ProductSchema = z.object({
   description: z.string().max(500, "A descrição não pode exceder 500 caracteres.").nullable().optional(),
   image: z.string().min(1, "URL da Imagem é obrigatória.").url("URL da imagem inválida."),
   category: z.string().min(1, "Categoria é obrigatória."),
+  price: z.number().min(0, "O preço deve ser um número não negativo."),
   is_active: z.boolean(),
 });
 
@@ -30,7 +31,7 @@ export async function createProductAction(formData: ProductFormData) {
     };
   }
 
-  const { name, description, category, is_active } = validatedFields.data;
+  const { name, description, category, price, is_active } = validatedFields.data;
   let originalImageUrl = validatedFields.data.image;
   let finalImageUrl = originalImageUrl;
 
@@ -45,6 +46,7 @@ export async function createProductAction(formData: ProductFormData) {
     description: description ?? null, 
     image: finalImageUrl,
     category: normalizedCat, 
+    price,
     is_active,
     created_at: new Date().toISOString()
   };
@@ -84,7 +86,7 @@ export async function updateProductAction(id: string, formData: ProductFormData)
     };
   }
   
-  const { name, description, category } = validatedFields.data;
+  const { name, description, category, price } = validatedFields.data;
   const isActiveValue = Boolean(formData.is_active);
   let originalImageUrl = validatedFields.data.image;
   let finalImageUrl = originalImageUrl;
@@ -100,6 +102,7 @@ export async function updateProductAction(id: string, formData: ProductFormData)
     description: description ?? null,
     image: finalImageUrl,
     category: normalizedCat,
+    price: price,
     is_active: isActiveValue,
   };
 
@@ -139,7 +142,7 @@ export async function deleteProductAction(id: string) {
 
   if (error) {
     console.error("Supabase error deleting product:", error);
-    return { error: error.message };
+    return { error: "Falha ao excluir permanentemente o produto: " + error.message };
   }
 
   revalidatePath("/admin/products");
@@ -175,7 +178,7 @@ export async function bulkDeleteProductsAction(productIds: string[]) {
 
   if (error) {
     console.error("Supabase error bulk deleting products:", error);
-    return { error: error.message };
+    return { error: "Falha ao excluir permanentemente os produtos em massa: " + error.message };
   }
   revalidatePath("/admin/products");
   return { success: true, message: `${productIds.length} produto(s) excluído(s) permanentemente com sucesso.` };

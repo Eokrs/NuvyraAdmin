@@ -37,7 +37,10 @@ const productFormSchema = z.object({
   category: z.string().min(1, {
     message: "A categoria é obrigatória.",
   }),
-  is_active: z.boolean(), // Removido .default(true)
+  price: z.coerce.number().min(0, { // coerce to number and ensure non-negative
+    message: "O preço deve ser um número não negativo.",
+  }),
+  is_active: z.boolean(),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -58,14 +61,16 @@ export function ProductForm({ initialData }: ProductFormProps) {
         description: initialData.description || "",
         image: initialData.image || "",
         category: initialData.category || "",
-        is_active: Boolean(initialData.is_active), // Explicitamente cast para boolean
+        price: initialData.price ?? 0, // Default to 0 if null or undefined
+        is_active: Boolean(initialData.is_active),
       }
     : {
         name: "",
         description: "",
         image: "",
         category: "",
-        is_active: true, // Default para novos produtos
+        price: 0,
+        is_active: true,
       };
 
   const form = useForm<ProductFormValues>({
@@ -85,6 +90,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
         description: data.description || undefined,
         image: data.image,
         category: data.category,
+        price: data.price,
         is_active: data.is_active,
       };
 
@@ -101,7 +107,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
           description: result.message,
         });
         router.push("/admin/products");
-        router.refresh(); // Ensures the list page is updated
+        router.refresh();
       } else {
         toast({
           title: "Erro ao salvar produto",
@@ -123,8 +129,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
   
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const url = event.target.value;
-    form.setValue("image", url, { shouldValidate: true }); // Update RHF state
-    setImageUrl(url); // Update local state for preview
+    form.setValue("image", url, { shouldValidate: true });
+    setImageUrl(url);
   };
 
 
@@ -178,8 +184,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
                      <Input 
                         placeholder="https://exemplo.com/imagem.png" 
                         {...field} 
-                        onChange={handleImageChange} // Use custom handler
-                        value={imageUrl} // Controlled by local state for preview
+                        onChange={handleImageChange}
+                        value={imageUrl}
                         className="bg-input/50 focus:bg-input/70"
                       />
                   </FormControl>
@@ -197,7 +203,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                     layout="fill"
                     objectFit="contain"
                     onError={() => {
-                      // Optionally handle image load error, e.g., show placeholder
                       // console.warn("Image preview error");
                     }}
                     data-ai-hint="product preview"
@@ -205,20 +210,43 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 </div>
               </div>
             )}
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoria</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: ROUPAS" {...field} className="bg-input/50 focus:bg-input/70" />
-                  </FormControl>
-                  <FormDescription>A categoria será normalizada (sem espaços extras, maiúsculas).</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoria</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: ROUPAS" {...field} className="bg-input/50 focus:bg-input/70" />
+                    </FormControl>
+                    <FormDescription>A categoria será normalizada.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Preço (R$)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="Ex: 29.99" 
+                        {...field} 
+                        step="0.01"
+                        className="bg-input/50 focus:bg-input/70" 
+                        onChange={event => field.onChange(+event.target.value)} // Ensure value is number
+                      />
+                    </FormControl>
+                    <FormDescription>Use ponto como separador decimal.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             
             <FormField
               control={form.control}
