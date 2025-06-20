@@ -1,4 +1,4 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/product-data-integrity.ts';
+// A importação do product-data-integrity.ts foi removida

@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Package, BarChart3, LogOut, Settings, ShieldCheck, Menu } from 'lucide-react';
+import { Package, LogOut } from 'lucide-react'; // Removido ShieldCheck e outros ícones não utilizados
 import { useAuth } from '@/context/AuthContext';
 import {
   DropdownMenu,
@@ -36,8 +36,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   const navItems = [
     { href: '/admin/products', label: 'Produtos', icon: Package },
-    { href: '/admin/data-integrity', label: 'Integridade de Dados', icon: ShieldCheck },
-    // Add more items here:
+    // O item de Integridade de Dados foi removido daqui
     // { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     // { href: '/admin/settings', label: 'Configurações', icon: Settings },
   ];
@@ -48,14 +47,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   if (loading) {
-    // This could be a more sophisticated loading screen
     return <div className="flex items-center justify-center h-screen"><Package className="h-16 w-16 animate-pulse text-primary" /></div>;
   }
   
-  // If not loading and no user, AuthContext should redirect.
-  // This is a safeguard.
   if (!user) {
-     return null; // Or a message, but AuthContext should handle redirection
+     return null; 
   }
 
   const userInitials = user?.email?.substring(0, 2).toUpperCase() || 'AD';
@@ -111,9 +107,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             <DropdownMenuContent side="top" align="start" className="w-56">
               <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {/* <DropdownMenuItem>Perfil</DropdownMenuItem>
-              <DropdownMenuItem>Configurações</DropdownMenuItem> 
-              <DropdownMenuSeparator /> */}
               <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
@@ -124,9 +117,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       </Sidebar>
       <SidebarInset className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 px-4 shadow-sm backdrop-blur-md md:justify-end">
-            <SidebarTrigger className="md:hidden" /> {/* Only show on mobile */}
+            <SidebarTrigger className="md:hidden" /> 
             <div className="flex items-center gap-4">
-                {/* Add any header items here, e.g. notifications */}
             </div>
         </header>
         <main className="flex-1 overflow-y-auto p-6 bg-background">
