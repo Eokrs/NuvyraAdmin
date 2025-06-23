@@ -29,7 +29,7 @@ export default async function SettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-headline font-bold tracking-tight flex items-center">
-            <SettingsIcon className="mr-3 h-8 w-8 text-primary" />
+            <SettingsIcon className="mr-3 h-8 w-8 text-accent" />
             Configurações do Site
           </h1>
           <p className="text-muted-foreground">

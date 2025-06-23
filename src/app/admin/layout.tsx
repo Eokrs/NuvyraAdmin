@@ -59,13 +59,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       <Sidebar variant="sidebar" side="left" className="border-r border-sidebar-border">
         <SidebarHeader className="p-4 flex flex-col items-center">
            <Link href="/admin/products" className="flex items-center gap-2 mb-4 group-data-[collapsible=icon]:hidden">
-             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-primary">
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-accent">
               <path d="M12.378 1.602a.75.75 0 00-.756 0L3.366 6.077a.75.75 0 00-.498.813l1.936 11.388a.75.75 0 00.582.613l5.529 1.908a.75.75 0 00.196.021h.012a.75.75 0 00.196-.021l5.529-1.908a.75.75 0 00.582-.613l1.936-11.388a.75.75 0 00-.498-.813L12.378 1.602zM12 7.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0V8.25A.75.75 0 0112 7.5zM11.25 15a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5h-1.5z" />
             </svg>
             <span className="font-headline text-xl font-semibold text-primary-foreground">Nuvyra Admin</span>
           </Link>
            <Link href="/admin/products" className="items-center gap-2 mb-4 group-data-[collapsible=icon]:flex hidden">
-             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-primary">
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-accent">
               <path d="M12.378 1.602a.75.75 0 00-.756 0L3.366 6.077a.75.75 0 00-.498.813l1.936 11.388a.75.75 0 00.582.613l5.529 1.908a.75.75 0 00.196.021h.012a.75.75 0 00.196-.021l5.529-1.908a.75.75 0 00.582-.613l1.936-11.388a.75.75 0 00-.498-.813L12.378 1.602zM12 7.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0V8.25A.75.75 0 0112 7.5zM11.25 15a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5h-1.5z" />
             </svg>
           </Link>

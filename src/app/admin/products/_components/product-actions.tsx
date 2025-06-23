@@ -77,15 +77,15 @@ export function ProductActions({ product }: ProductActionsProps) {
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href={`/admin/products/edit/${product.id}`} className="flex items-center cursor-pointer">
-              <Edit3 className="mr-2 h-4 w-4 text-blue-400" />
+              <Edit3 className="mr-2 h-4 w-4 text-accent" />
               Editar
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleToggleIsActive} disabled={isStatusToggling} className="cursor-pointer">
             {product.is_active ? (
-              <ToggleLeft className="mr-2 h-4 w-4 text-red-400" />
+              <ToggleLeft className="mr-2 h-4 w-4 text-destructive" />
             ) : (
-              <ToggleRight className="mr-2 h-4 w-4 text-green-400" />
+              <ToggleRight className="mr-2 h-4 w-4 text-accent" />
             )}
             {product.is_active ? 'Desativar' : 'Ativar'}
           </DropdownMenuItem>
