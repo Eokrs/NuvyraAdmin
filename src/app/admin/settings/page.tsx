@@ -9,7 +9,7 @@ async function getSiteSettings(): Promise<SiteSettings | null> {
   const supabase = createSupabaseServerClient();
   // We assume there's only one row of settings, with id = 1
   const { data, error } = await supabase
-    .from("site_setting")
+    .from("site_settings")
     .select("*")
     .eq("id", 1)
     .single();
@@ -45,7 +45,7 @@ export default async function SettingsPage() {
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Configurações não encontradas</AlertTitle>
           <AlertDescription>
-            Não foi possível carregar as configurações do site. Verifique se a tabela `site_setting` contém uma linha com `id = 1`.
+            Não foi possível carregar as configurações do site. Verifique se a tabela `site_settings` contém uma linha com `id = 1`.
           </AlertDescription>
         </Alert>
       )}

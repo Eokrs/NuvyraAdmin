@@ -46,7 +46,7 @@ export async function updateSiteSettingsAction(id: number, formData: SiteSetting
   };
 
   const { data, error } = await supabase
-    .from("site_setting")
+    .from("site_settings")
     .update(settingsDataToUpdate)
     .eq("id", id)
     .select()
