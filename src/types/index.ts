@@ -22,6 +22,26 @@ export type ProductFormData = {
   // created_at will be set automatically or is not typically part of create/edit form directly by user
 };
 
+export interface SiteSettings {
+  id: number;
+  site_name: string | null;
+  default_seo_title: string | null;
+  default_seo_description: string | null;
+  seo_keywords: string[] | null;
+  banner_images: string[] | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export type SiteSettingsFormData = {
+  site_name: string;
+  default_seo_title: string;
+  default_seo_description: string;
+  seo_keywords: string; // Comma-separated string in the form
+  banner_images: string; // Newline-separated string in the form
+};
+
+
 // This can be expanded if specific error structures are needed
 export interface ApiError {
   message: string;

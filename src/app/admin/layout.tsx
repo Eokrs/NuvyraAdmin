@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Package, LogOut } from 'lucide-react'; // Removido ShieldCheck e outros ícones não utilizados
+import { Package, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import {
   DropdownMenu,
@@ -36,9 +36,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   const navItems = [
     { href: '/admin/products', label: 'Produtos', icon: Package },
-    // O item de Integridade de Dados foi removido daqui
-    // { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-    // { href: '/admin/settings', label: 'Configurações', icon: Settings },
+    { href: '/admin/settings', label: 'Configurações', icon: Settings },
   ];
 
   const handleSignOut = async () => {
