@@ -28,8 +28,6 @@ export default function LoginPage() {
       const { error: signInError } = await signInWithEmail(email, password);
       if (signInError) {
         let errorMessage = "Falha ao fazer login. Verifique suas credenciais.";
-        // Supabase error codes might differ, adjust as needed
-        // Example: if (signInError.message.includes("Invalid login credentials"))
         if (signInError.message.toLowerCase().includes('invalid login credentials')) {
            errorMessage = "Email ou senha inválidos.";
         } else if (signInError.message.toLowerCase().includes('email not confirmed')) {
@@ -46,7 +44,6 @@ export default function LoginPage() {
           title: "Login bem-sucedido!",
           description: "Redirecionando para o painel...",
         });
-        // AuthContext will handle redirect via its useEffect or onAuthStateChange
       }
     } catch (err: any) {
       console.error("Login Page Error:", err);
@@ -65,9 +62,6 @@ export default function LoginPage() {
   if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen"><LogIn className="h-8 w-8 animate-pulse text-primary" /></div>;
   }
-  // AuthContext handles redirection if user is already authenticated
-  // So, if we reach here and authUser exists, it's likely a brief moment before redirection
-  // or a state mismatch. Rely on AuthContext's useEffect for consistent redirection.
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-primary/20 p-4">

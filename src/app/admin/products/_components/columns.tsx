@@ -31,7 +31,6 @@ export const columns: ColumnDef<Product>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Selecionar todas as linhas"
-        className="border-primary-foreground/50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
       />
     ),
     cell: ({ row }) => (
@@ -39,7 +38,6 @@ export const columns: ColumnDef<Product>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Selecionar linha"
-        className="border-primary-foreground/50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
       />
     ),
     enableSorting: false,

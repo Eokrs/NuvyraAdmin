@@ -22,7 +22,7 @@ import type { Product, ProductFormData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { createProductAction, updateProductAction } from "../actions";
-import { Loader2, Save, Image as ImageIcon } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import React, { useState } from "react";
 import NextImage from "next/image";
 
@@ -257,7 +257,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
