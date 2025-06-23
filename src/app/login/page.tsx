@@ -63,7 +63,7 @@ export default function LoginPage() {
   };
   
   if (authLoading) {
-    return <div className="flex items-center justify-center min-h-screen"><LogIn className="h-8 w-8 animate-pulse text-accent" /></div>;
+    return <div className="flex items-center justify-center min-h-screen"><LogIn className="h-8 w-8 animate-pulse text-primary" /></div>;
   }
   // AuthContext handles redirection if user is already authenticated
   // So, if we reach here and authUser exists, it's likely a brief moment before redirection
@@ -74,7 +74,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl glassmorphism border-primary/30">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-accent">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-primary">
               <path d="M12.378 1.602a.75.75 0 00-.756 0L3.366 6.077a.75.75 0 00-.498.813l1.936 11.388a.75.75 0 00.582.613l5.529 1.908a.75.75 0 00.196.021h.012a.75.75 0 00.196-.021l5.529-1.908a.75.75 0 00.582-.613l1.936-11.388a.75.75 0 00-.498-.813L12.378 1.602zM12 7.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0V8.25A.75.75 0 0112 7.5zM11.25 15a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5h-1.5z" />
             </svg>
           </div>

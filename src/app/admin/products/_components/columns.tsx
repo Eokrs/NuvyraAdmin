@@ -115,11 +115,11 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       const isActive = row.getValue("is_active") as boolean;
       return isActive ? 
-        <Badge variant="outline" className="border-accent/50 bg-accent/20 text-accent">
+        <Badge variant="outline" className="border-green-500/50 bg-green-500/20 text-green-700 dark:text-green-400">
           <CheckCircleIcon className="mr-1 h-3 w-3" /> Sim
         </Badge> 
         : 
-        <Badge variant="outline" className="border-destructive/50 bg-destructive/20 text-destructive">
+        <Badge variant="outline" className="border-red-500/50 bg-red-500/20 text-red-700 dark:text-red-400">
           <XCircleIcon className="mr-1 h-3 w-3" /> Não
         </Badge>;
     },
