@@ -128,6 +128,33 @@ export function ProductForm({ initialData }: ProductFormProps) {
       setLoading(false);
     }
   };
+  
+  const convertImageToPng = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            if (!event.target?.result) {
+              return reject(new Error("Falha ao ler o arquivo de imagem."));
+            }
+            img.src = event.target.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    return reject(new Error('Não foi possível obter o contexto do canvas.'));
+                }
+                ctx.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/png'));
+            };
+            img.onerror = (error) => reject(error);
+        };
+        reader.onerror = (error) => reject(error);
+    });
+  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -139,32 +166,25 @@ export function ProductForm({ initialData }: ProductFormProps) {
     }
 
     setIsUploading(true);
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        try {
-            const result = await uploadImageAction(base64data);
-            if (result.success && result.url) {
-                form.setValue("image", result.url, { shouldValidate: true });
-                setImageUrl(result.url);
-                toast({ title: "Sucesso!", description: result.message });
-            } else {
-                toast({ title: "Falha no Upload", description: result.message, variant: "destructive" });
-            }
-        } catch (error) {
-            toast({ title: "Erro Inesperado", description: "Não foi possível fazer o upload da imagem.", variant: "destructive" });
-        } finally {
-            setIsUploading(false);
-            if(fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
+    try {
+        const pngDataUri = await convertImageToPng(file);
+        const result = await uploadImageAction(pngDataUri);
+        if (result.success && result.url) {
+            form.setValue("image", result.url, { shouldValidate: true });
+            setImageUrl(result.url);
+            toast({ title: "Sucesso!", description: "Imagem convertida para PNG e enviada." });
+        } else {
+            toast({ title: "Falha no Upload", description: result.message, variant: "destructive" });
         }
-    };
-    reader.onerror = () => {
-        toast({ title: "Erro de Leitura", description: "Não foi possível ler o arquivo de imagem.", variant: "destructive" });
+    } catch (error: any) {
+        console.error("Image conversion/upload error:", error);
+        toast({ title: "Erro na Conversão", description: `Não foi possível converter ou enviar a imagem: ${error.message}`, variant: "destructive" });
+    } finally {
         setIsUploading(false);
-    };
+        if(fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    }
   };
 
   return (
@@ -254,7 +274,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                         />
                     </div>
                     <FormDescription>
-                        A imagem será enviada para o Imgur. Tamanho máximo: 10MB.
+                        A imagem será convertida para PNG e enviada para o Imgur. Tamanho máximo: 10MB.
                     </FormDescription>
                   </div>
 

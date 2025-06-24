@@ -26,8 +26,11 @@ export async function uploadImageAction(imageDataUri: string): Promise<{ success
     if (!imageDataUri || !imageDataUri.startsWith('data:image')) {
       return { success: false, message: 'Formato de imagem inválido.' };
     }
+
+    // The data URI is now expected to be a PNG from the client-side conversion
     const newUrl = await uploadImageToImgur(imageDataUri);
-    return { success: true, url: newUrl, message: "Imagem enviada para o Imgur com sucesso!" };
+
+    return { success: true, url: newUrl, message: "Imagem enviada com sucesso!" };
   } catch (error: any) {
     console.error("Image upload failed:", error);
     return { success: false, message: error.message || "Falha ao enviar a imagem. Verifique os logs do servidor." };

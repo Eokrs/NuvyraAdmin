@@ -1,4 +1,1 @@
-import { config } from 'dotenv';
-config();
-
-// A importação do product-data-integrity.ts foi removida
+// This file is intentionally left empty as Genkit local development server is not being used.
