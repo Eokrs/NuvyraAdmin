@@ -52,7 +52,7 @@ To run the project locally:
     ```bash
     npm run dev
     ```
-    The application will be available at `http://localhost:9002`.
+    The application will be available at `http://localhost:9003`.
 
 5.  If you are using Genkit AI features, you might also want to run the Genkit development server in a separate terminal:
     ```bash

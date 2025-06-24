@@ -4,7 +4,7 @@
 import type { User, Session } from '@supabase/supabase-js';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 interface AuthContextType {
@@ -25,46 +25,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // This is the primary listener for auth state changes.
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    // Also check the initial session state when the provider mounts.
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-
-      // Handle redirects based on auth state
-      if (session) {
-        if (pathname === '/login') {
-          router.push('/admin/products');
-        }
-      } else {
-        if (pathname.startsWith('/admin')) {
-          router.push('/login');
-        }
-      }
-    });
-
-    // Check initial session
-    const getInitialSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-      if (!data.session && pathname.startsWith('/admin')) {
-        router.push('/login');
-      } else if (data.session && pathname === '/login') {
-         router.push('/admin/products');
-      }
     };
-    getInitialSession();
 
+    getInitialSession();
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [supabase, router, pathname]);
-
+  }, [supabase]);
 
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true);
@@ -73,8 +58,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (signInError) {
       console.error("Supabase Sign In Error:", signInError);
       setError(signInError);
+    } else {
+        // Redirect on successful login is now handled by middleware.
+        // We can just refresh the router to make sure it re-evaluates the route.
+        router.refresh();
     }
-    // onAuthStateChange will handle user state update and redirect
     setLoading(false);
     return { error: signInError };
   };
@@ -83,8 +71,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     try {
       await supabase.auth.signOut();
-      // setUser and setSession will be handled by onAuthStateChange
-      router.push('/login'); // Explicit redirect after sign out
+      // Redirect after sign-out is also handled by middleware.
+      // Force a navigation event to trigger middleware check.
+      router.push('/login');
     } catch (e) {
       console.error("Supabase Sign out error:", e);
       setError(e as Error);
@@ -92,21 +81,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }
   };
-  
-  useEffect(() => {
-    // This effect might be redundant due to onAuthStateChange handling, but kept as a safeguard.
-    if (!loading) {
-      if (!session && pathname !== '/login' && pathname.startsWith('/admin')) {
-        router.push('/login');
-      }
-      if (session && pathname === '/login') {
-        router.push('/admin/products');
-      }
-    }
-  }, [session, loading, pathname, router]);
 
-
-  if (loading && (pathname.startsWith('/admin') || pathname === '/login' || pathname === '/')) {
+  // The loading screen is important to prevent content flashing before auth state is determined.
+  if (loading) {
      return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

@@ -4,15 +4,17 @@ import { cookies } from 'next/headers';
 
 export function createSupabaseServerClient() {
   const cookieStore = cookies();
+  
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase URL or Anon Key. Check your .env file and environment variables, and restart the server.');
+  }
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // Using anon key for server actions as well, service_role for admin tasks if needed.
-                                               // For this app, anon key is fine if RLS is set up correctly or if operations are simple.
-                                               // If row-level security is not fully covering admin actions, use SUPABASE_SERVICE_ROLE_KEY.
-                                               // However, for user-facing app with admin panel, it is often preferred to use anon key + RLS
-                                               // or a dedicated admin role with specific permissions.
-                                               // For simplicity and as per user instruction "Supabase API or SDK", anon key is used.
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         get(name: string) {
