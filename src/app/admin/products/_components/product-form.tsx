@@ -21,9 +21,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import type { Product, ProductFormData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { createProductAction, updateProductAction, convertImageUrlAction } from "../actions";
-import { Loader2, Save, Wand2 } from "lucide-react";
-import React, { useState } from "react";
+import { createProductAction, updateProductAction, uploadImageAction } from "../actions";
+import { Loader2, Save, Upload } from "lucide-react";
+import React, { useState, useRef } from "react";
 import NextImage from "next/image";
 
 const productFormSchema = z.object({
@@ -33,7 +33,7 @@ const productFormSchema = z.object({
   description: z.string().max(500, {
     message: "A descrição não pode exceder 500 caracteres.",
   }).nullable().optional(),
-  image: z.string().url({ message: "Por favor, insira uma URL válida para a imagem." }),
+  image: z.string().url({ message: "É necessária uma URL de imagem válida. Por favor, envie uma imagem." }),
   category: z.string().min(1, {
     message: "A categoria é obrigatória.",
   }),
@@ -53,8 +53,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [isConverting, setIsConverting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialData?.image || "");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const defaultValues = initialData
     ? {
@@ -127,37 +128,44 @@ export function ProductForm({ initialData }: ProductFormProps) {
       setLoading(false);
     }
   };
-  
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const url = event.target.value;
-    form.setValue("image", url, { shouldValidate: true });
-    setImageUrl(url);
-  };
 
-  const handleConvert = async () => {
-    const currentUrl = form.getValues("image");
-    if (!currentUrl || !currentUrl.startsWith('https://jmdy.shop')) {
-      toast({ title: "URL Inválida", description: "Apenas URLs do jmdy.shop podem ser convertidas.", variant: "default" });
-      return;
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit for Imgur free tier
+        toast({ title: "Arquivo Muito Grande", description: "O tamanho da imagem não pode exceder 10MB.", variant: "destructive" });
+        return;
     }
 
-    setIsConverting(true);
-    try {
-      const result = await convertImageUrlAction(currentUrl);
-      if (result.success) {
-        form.setValue("image", result.url, { shouldValidate: true });
-        setImageUrl(result.url); // for preview
-        toast({ title: "Sucesso!", description: result.message });
-      } else {
-        toast({ title: "Falha na Conversão", description: result.message, variant: "destructive" });
-      }
-    } catch (error) {
-      toast({ title: "Erro Inesperado", description: "Não foi possível converter a imagem.", variant: "destructive" });
-    } finally {
-      setIsConverting(false);
-    }
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async () => {
+        const base64data = reader.result as string;
+        try {
+            const result = await uploadImageAction(base64data);
+            if (result.success && result.url) {
+                form.setValue("image", result.url, { shouldValidate: true });
+                setImageUrl(result.url);
+                toast({ title: "Sucesso!", description: result.message });
+            } else {
+                toast({ title: "Falha no Upload", description: result.message, variant: "destructive" });
+            }
+        } catch (error) {
+            toast({ title: "Erro Inesperado", description: "Não foi possível fazer o upload da imagem.", variant: "destructive" });
+        } finally {
+            setIsUploading(false);
+            if(fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        }
+    };
+    reader.onerror = () => {
+        toast({ title: "Erro de Leitura", description: "Não foi possível ler o arquivo de imagem.", variant: "destructive" });
+        setIsUploading(false);
+    };
   };
-
 
   return (
     <Card className="max-w-3xl mx-auto shadow-xl bg-card">
@@ -199,56 +207,62 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
               name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL da Imagem</FormLabel>
-                  <div className="flex items-center gap-2">
-                    <FormControl>
-                      <Input
-                        placeholder="https://exemplo.com/imagem.png"
-                        {...field}
-                        onChange={handleImageChange}
-                        value={imageUrl}
-                        className="bg-input/50 focus:bg-input/70"
-                      />
-                    </FormControl>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleConvert}
-                      disabled={isConverting || !imageUrl.startsWith('https://jmdy.shop')}
-                      className="shrink-0"
-                    >
-                      {isConverting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-                      <span className="ml-2 hidden sm:inline">Converter</span>
-                    </Button>
+                  <FormLabel>Imagem do Produto</FormLabel>
+                  <FormControl>
+                    <Input type="hidden" {...field} value={field.value || ""} />
+                  </FormControl>
+
+                  {imageUrl && (
+                    <div className="mt-2 p-2 border rounded-md border-border bg-muted/20">
+                      <FormLabel className="text-sm text-muted-foreground">Preview da Imagem:</FormLabel>
+                      <div className="relative w-full h-64 mt-1 overflow-hidden rounded-md shadow-inner">
+                        <NextImage
+                          src={imageUrl}
+                          alt="Preview da Imagem"
+                          layout="fill"
+                          objectFit="contain"
+                          data-ai-hint="product preview"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2 pt-2">
+                    <div className="flex items-center gap-4">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="shrink-0"
+                        >
+                            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                            {isUploading ? "Enviando..." : imageUrl ? "Enviar Outra Imagem" : "Enviar Imagem"}
+                        </Button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            accept="image/png, image/jpeg, image/gif, image/webp"
+                            className="hidden"
+                        />
+                    </div>
+                    <FormDescription>
+                        A imagem será enviada para o Imgur. Tamanho máximo: 10MB.
+                    </FormDescription>
                   </div>
-                  <FormDescription>Se a URL for do `jmdy.shop`, use o botão para converter para um link do Imgur.</FormDescription>
+
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {imageUrl && (
-              <div className="mt-2 p-2 border rounded-md border-border bg-muted/20">
-                <FormLabel className="text-sm text-muted-foreground">Preview da Imagem:</FormLabel>
-                <div className="relative w-full h-64 mt-1 overflow-hidden rounded-md shadow-inner">
-                  <NextImage
-                    src={imageUrl}
-                    alt="Preview da Imagem"
-                    layout="fill"
-                    objectFit="contain"
-                    onError={() => {
-                      // console.warn("Image preview error");
-                    }}
-                    data-ai-hint="product preview"
-                  />
-                </div>
-              </div>
-            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <FormField
                 control={form.control}
@@ -309,7 +323,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
             />
             
             <div className="flex justify-end pt-6">
-              <Button type="submit" disabled={loading || isConverting} className="min-w-[150px] bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button type="submit" disabled={loading || isUploading} className="min-w-[150px] bg-primary hover:bg-primary/90 text-primary-foreground">
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (

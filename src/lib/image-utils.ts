@@ -1,35 +1,23 @@
 
 'use server';
 
-export async function convertToImgurUrl(originalImageUrl: string): Promise<string> {
-  if (!originalImageUrl.startsWith('https://jmdy.shop')) {
-    return originalImageUrl; // Not a jmdy.shop URL, return as is
-  }
-
+export async function uploadImageToImgur(dataUri: string): Promise<string> {
   const clientId = process.env.IMGUR_CLIENT_ID;
   if (!clientId) {
-    console.warn('IMGUR_CLIENT_ID is not set. Skipping Imgur upload for:', originalImageUrl);
-    return originalImageUrl; // Return original if no client ID
+    console.warn('IMGUR_CLIENT_ID is not set. Cannot upload to Imgur.');
+    throw new Error('O upload para o Imgur não está configurado no servidor (IMGUR_CLIENT_ID ausente).');
+  }
+
+  const base64Data = dataUri.split(',')[1];
+  if (!base64Data) {
+      throw new Error('URI de dados inválido para o upload da imagem.');
   }
 
   try {
-    // Step 1: Fetch the image from the original URL
-    const imageResponse = await fetch(originalImageUrl);
-    if (!imageResponse.ok) {
-      console.error(`Failed to fetch image from ${originalImageUrl}:`, imageResponse.status, imageResponse.statusText);
-      return originalImageUrl;
-    }
-    
-    // Step 2: Convert the image data to a Base64 string
-    const arrayBuffer = await imageResponse.arrayBuffer();
-    const imageBase64 = Buffer.from(arrayBuffer).toString('base64');
-    
-    // Step 3: Prepare FormData for Imgur API with the base64 string
     const formData = new FormData();
-    formData.append('image', imageBase64);
-    formData.append('type', 'base64'); // Tell Imgur API the image is base64 encoded
+    formData.append('image', base64Data);
+    formData.append('type', 'base64');
 
-    // Step 4: Post the image data to Imgur
     const response = await fetch('https://api.imgur.com/3/image', {
       method: 'POST',
       headers: {
@@ -39,9 +27,10 @@ export async function convertToImgurUrl(originalImageUrl: string): Promise<strin
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Failed to parse Imgur error response' }));
+      const errorData = await response.json().catch(() => ({}));
       console.error('Imgur API error:', response.status, response.statusText, errorData);
-      return originalImageUrl;
+      const errorMessage = errorData?.data?.error || 'Falha no upload para o Imgur.';
+      throw new Error(`Erro da API do Imgur: ${errorMessage}`);
     }
 
     const result = await response.json();
@@ -49,11 +38,13 @@ export async function convertToImgurUrl(originalImageUrl: string): Promise<strin
       console.log('Image successfully uploaded to Imgur:', result.data.link);
       return result.data.link;
     } else {
-      console.error('Imgur API response missing success flag or link property:', result);
-      return originalImageUrl;
+      throw new Error('A resposta da API do Imgur não contém um link válido.');
     }
-  } catch (error) {
-    console.error('Exception during Imgur upload process:', error);
-    return originalImageUrl;
+  } catch (error: any) {
+    console.error('Exceção durante o processo de upload para o Imgur:', error);
+    if (error.message.startsWith('Erro da API do Imgur:') || error.message.startsWith('O upload para o Imgur não está configurado')) {
+        throw error;
+    }
+    throw new Error('Ocorreu um erro inesperado durante o upload da imagem.');
   }
 }
