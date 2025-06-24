@@ -13,19 +13,23 @@ export async function convertToImgurUrl(originalImageUrl: string): Promise<strin
   }
 
   try {
-    // Step 1: Fetch the image from the original URL as a blob
+    // Step 1: Fetch the image from the original URL
     const imageResponse = await fetch(originalImageUrl);
     if (!imageResponse.ok) {
       console.error(`Failed to fetch image from ${originalImageUrl}:`, imageResponse.status, imageResponse.statusText);
       return originalImageUrl;
     }
-    const imageBlob = await imageResponse.blob();
-
-    // Step 2: Prepare FormData for Imgur API with the image blob
+    
+    // Step 2: Convert the image data to a Base64 string
+    const arrayBuffer = await imageResponse.arrayBuffer();
+    const imageBase64 = Buffer.from(arrayBuffer).toString('base64');
+    
+    // Step 3: Prepare FormData for Imgur API with the base64 string
     const formData = new FormData();
-    formData.append('image', imageBlob); // Uploading as a blob (file)
+    formData.append('image', imageBase64);
+    formData.append('type', 'base64'); // Tell Imgur API the image is base64 encoded
 
-    // Step 3: Post the image data to Imgur
+    // Step 4: Post the image data to Imgur
     const response = await fetch('https://api.imgur.com/3/image', {
       method: 'POST',
       headers: {
