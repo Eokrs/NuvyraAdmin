@@ -25,7 +25,7 @@ To deploy this Next.js application to Netlify, follow these steps:
     *   Add the following variables:
         *   `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL.
         *   `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase project Anon key.
-        *   `IMGUR_CLIENT_ID`: Your Imgur application Client ID (if you are using the jmdy.shop to Imgur image conversion feature).
+        *   `NEXT_PUBLIC_IMGUR_CLIENT_ID`: Your Imgur application Client ID.
 
 4.  **Deploy:**
     *   Click "Deploy site". Netlify will build and deploy your application.
@@ -38,11 +38,11 @@ The `apphosting.yaml` file in this project is specific to Firebase App Hosting a
 To run the project locally:
 
 1.  Ensure you have Node.js (preferably a recent LTS version) and npm installed.
-2.  Create a `.env` file in the root of the project and add your Supabase and (optional) Imgur credentials:
+2.  Create a `.env` file in the root of the project and add your Supabase and Imgur credentials:
     ```
     NEXT_PUBLIC_SUPABASE_URL="YOUR_SUPABASE_URL_HERE"
     NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY_HERE"
-    IMGUR_CLIENT_ID="YOUR_IMGUR_CLIENT_ID_HERE" # Optional
+    NEXT_PUBLIC_IMGUR_CLIENT_ID="YOUR_IMGUR_CLIENT_ID_HERE"
     ```
 3.  Install dependencies:
     ```bash

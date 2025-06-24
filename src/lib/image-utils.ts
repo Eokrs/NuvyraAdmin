@@ -1,11 +1,10 @@
 
-'use server';
 
 export async function uploadImageToImgur(dataUri: string): Promise<string> {
-  const clientId = process.env.IMGUR_CLIENT_ID;
+  const clientId = process.env.NEXT_PUBLIC_IMGUR_CLIENT_ID;
   if (!clientId) {
-    console.warn('IMGUR_CLIENT_ID is not set. Cannot upload to Imgur.');
-    throw new Error('O upload para o Imgur não está configurado no servidor (IMGUR_CLIENT_ID ausente).');
+    console.warn('NEXT_PUBLIC_IMGUR_CLIENT_ID is not set. Cannot upload to Imgur.');
+    throw new Error('O upload para o Imgur não está configurado no cliente (NEXT_PUBLIC_IMGUR_CLIENT_ID ausente).');
   }
 
   const base64Data = dataUri.split(',')[1];

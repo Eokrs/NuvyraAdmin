@@ -21,7 +21,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import type { Product, ProductFormData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { createProductAction, updateProductAction, uploadImageAction } from "../actions";
+import { createProductAction, updateProductAction } from "../actions";
+import { uploadImageToImgur } from "@/lib/image-utils";
 import { Loader2, Save, Upload } from "lucide-react";
 import React, { useState, useRef } from "react";
 import NextImage from "next/image";
@@ -160,7 +161,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit for Imgur free tier
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
         toast({ title: "Arquivo Muito Grande", description: "O tamanho da imagem não pode exceder 10MB.", variant: "destructive" });
         return;
     }
@@ -168,17 +169,15 @@ export function ProductForm({ initialData }: ProductFormProps) {
     setIsUploading(true);
     try {
         const pngDataUri = await convertImageToPng(file);
-        const result = await uploadImageAction(pngDataUri);
-        if (result.success && result.url) {
-            form.setValue("image", result.url, { shouldValidate: true });
-            setImageUrl(result.url);
-            toast({ title: "Sucesso!", description: "Imagem convertida para PNG e enviada." });
-        } else {
-            toast({ title: "Falha no Upload", description: result.message, variant: "destructive" });
-        }
+        const newUrl = await uploadImageToImgur(pngDataUri);
+        
+        form.setValue("image", newUrl, { shouldValidate: true });
+        setImageUrl(newUrl);
+        toast({ title: "Sucesso!", description: "Imagem convertida para PNG e enviada." });
+
     } catch (error: any) {
         console.error("Image conversion/upload error:", error);
-        toast({ title: "Erro na Conversão", description: `Não foi possível converter ou enviar a imagem: ${error.message}`, variant: "destructive" });
+        toast({ title: "Erro no Upload", description: `Não foi possível enviar a imagem: ${error.message}`, variant: "destructive" });
     } finally {
         setIsUploading(false);
         if(fileInputRef.current) {

@@ -5,7 +5,6 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ProductFormData } from "@/types";
-import { uploadImageToImgur } from "@/lib/image-utils";
 
 const ProductSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório."),
@@ -20,22 +19,6 @@ const ProductSchema = z.object({
 const normalizeCategory = (category: string) => {
   return category.trim().toUpperCase();
 };
-
-export async function uploadImageAction(imageDataUri: string): Promise<{ success: boolean; url?: string; message: string }> {
-  try {
-    if (!imageDataUri || !imageDataUri.startsWith('data:image')) {
-      return { success: false, message: 'Formato de imagem inválido.' };
-    }
-
-    // The data URI is now expected to be a PNG from the client-side conversion
-    const newUrl = await uploadImageToImgur(imageDataUri);
-
-    return { success: true, url: newUrl, message: "Imagem enviada com sucesso!" };
-  } catch (error: any) {
-    console.error("Image upload failed:", error);
-    return { success: false, message: error.message || "Falha ao enviar a imagem. Verifique os logs do servidor." };
-  }
-}
 
 export async function createProductAction(formData: ProductFormData) {
   const supabase = createSupabaseServerClient();
