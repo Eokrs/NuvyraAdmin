@@ -21,8 +21,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import type { Product, ProductFormData } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { createProductAction, updateProductAction } from "../actions";
-import { Loader2, Save } from "lucide-react";
+import { createProductAction, updateProductAction, convertImageUrlAction } from "../actions";
+import { Loader2, Save, Wand2 } from "lucide-react";
 import React, { useState } from "react";
 import NextImage from "next/image";
 
@@ -53,6 +53,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialData?.image || "");
 
   const defaultValues = initialData
@@ -133,6 +134,30 @@ export function ProductForm({ initialData }: ProductFormProps) {
     setImageUrl(url);
   };
 
+  const handleConvert = async () => {
+    const currentUrl = form.getValues("image");
+    if (!currentUrl || !currentUrl.startsWith('https://jmdy.shop')) {
+      toast({ title: "URL Inválida", description: "Apenas URLs do jmdy.shop podem ser convertidas.", variant: "default" });
+      return;
+    }
+
+    setIsConverting(true);
+    try {
+      const result = await convertImageUrlAction(currentUrl);
+      if (result.success) {
+        form.setValue("image", result.url, { shouldValidate: true });
+        setImageUrl(result.url); // for preview
+        toast({ title: "Sucesso!", description: result.message });
+      } else {
+        toast({ title: "Falha na Conversão", description: result.message, variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Erro Inesperado", description: "Não foi possível converter a imagem.", variant: "destructive" });
+    } finally {
+      setIsConverting(false);
+    }
+  };
+
 
   return (
     <Card className="max-w-3xl mx-auto shadow-xl bg-card">
@@ -180,15 +205,29 @@ export function ProductForm({ initialData }: ProductFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>URL da Imagem</FormLabel>
-                  <FormControl>
-                     <Input 
-                        placeholder="https://exemplo.com/imagem.png" 
-                        {...field} 
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <Input
+                        placeholder="https://exemplo.com/imagem.png"
+                        {...field}
                         onChange={handleImageChange}
                         value={imageUrl}
                         className="bg-input/50 focus:bg-input/70"
                       />
-                  </FormControl>
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleConvert}
+                      disabled={isConverting || !imageUrl.startsWith('https://jmdy.shop')}
+                      className="shrink-0"
+                    >
+                      {isConverting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                      <span className="ml-2 hidden sm:inline">Converter</span>
+                    </Button>
+                  </div>
+                  <FormDescription>Se a URL for do `jmdy.shop`, use o botão para converter para um link do Imgur.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -270,7 +309,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
             />
             
             <div className="flex justify-end pt-6">
-              <Button type="submit" disabled={loading} className="min-w-[150px] bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button type="submit" disabled={loading || isConverting} className="min-w-[150px] bg-primary hover:bg-primary/90 text-primary-foreground">
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
