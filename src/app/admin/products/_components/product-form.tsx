@@ -26,6 +26,7 @@ import { uploadImageToImgur } from "@/lib/image-utils";
 import { Loader2, Save, Upload } from "lucide-react";
 import React, { useState, useRef } from "react";
 import NextImage from "next/image";
+import { cn } from "@/lib/utils";
 
 const productFormSchema = z.object({
   name: z.string().min(2, {
@@ -57,6 +58,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialData?.image || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const defaultValues = initialData
     ? {
@@ -157,9 +159,14 @@ export function ProductForm({ initialData }: ProductFormProps) {
     });
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const processAndUploadFile = async (file: File | null | undefined) => {
     if (!file) return;
+
+    const acceptedTypes = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+    if (!acceptedTypes.includes(file.type)) {
+      toast({ title: "Tipo de Arquivo Inválido", description: "Por favor, selecione uma imagem (PNG, JPG, GIF, WEBP).", variant: "destructive" });
+      return;
+    }
 
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
         toast({ title: "Arquivo Muito Grande", description: "O tamanho da imagem não pode exceder 10MB.", variant: "destructive" });
@@ -184,6 +191,39 @@ export function ProductForm({ initialData }: ProductFormProps) {
             fileInputRef.current.value = "";
         }
     }
+  };
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    processAndUploadFile(file);
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isUploading) return;
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation(); // Necessary to allow drop.
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (isUploading) return;
+
+    const file = e.dataTransfer.files?.[0];
+    processAndUploadFile(file);
   };
 
   return (
@@ -236,47 +276,63 @@ export function ProductForm({ initialData }: ProductFormProps) {
                   <FormControl>
                     <Input type="hidden" {...field} value={field.value || ""} />
                   </FormControl>
+                  <div
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onClick={() => !isUploading && fileInputRef.current?.click()}
+                    className={cn(
+                        "group relative grid h-72 w-full place-items-center rounded-lg border-2 border-dashed transition-colors",
+                        isDragging && !isUploading ? "border-primary bg-primary/10" : "border-border",
+                        !isUploading && "cursor-pointer hover:border-primary/70"
+                    )}
+                  >
+                     <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageSelect}
+                        accept="image/png, image/jpeg, image/gif, image/webp"
+                        className="hidden"
+                        disabled={isUploading}
+                    />
 
-                  {imageUrl && (
-                    <div className="mt-2 p-2 border rounded-md border-border bg-muted/20">
-                      <FormLabel className="text-sm text-muted-foreground">Preview da Imagem:</FormLabel>
-                      <div className="relative w-full h-64 mt-1 overflow-hidden rounded-md shadow-inner">
-                        <NextImage
-                          src={imageUrl}
-                          alt="Preview da Imagem"
-                          layout="fill"
-                          objectFit="contain"
-                          data-ai-hint="product preview"
-                        />
-                      </div>
-                    </div>
-                  )}
+                    {isUploading && (
+                        <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            <p className="font-medium">Enviando imagem...</p>
+                        </div>
+                    )}
+                    
+                    {!isUploading && imageUrl && (
+                         <>
+                            <NextImage
+                              src={imageUrl}
+                              alt="Preview da Imagem"
+                              layout="fill"
+                              objectFit="contain"
+                              className="rounded-md p-2"
+                              data-ai-hint="product preview"
+                            />
+                            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-lg bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                <Upload className="h-8 w-8"/>
+                                <p className="font-semibold">Trocar Imagem</p>
+                                <p className="text-sm">Arraste um novo arquivo ou clique</p>
+                            </div>
+                        </>
+                    )}
 
-                  <div className="flex flex-col gap-2 pt-2">
-                    <div className="flex items-center gap-4">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading}
-                            className="shrink-0"
-                        >
-                            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                            {isUploading ? "Enviando..." : imageUrl ? "Enviar Outra Imagem" : "Enviar Imagem"}
-                        </Button>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleImageUpload}
-                            accept="image/png, image/jpeg, image/gif, image/webp"
-                            className="hidden"
-                        />
-                    </div>
-                    <FormDescription>
-                        A imagem será convertida para PNG e enviada para o Imgur. Tamanho máximo: 10MB.
-                    </FormDescription>
+                    {!isUploading && !imageUrl && (
+                        <div className="flex flex-col items-center justify-center gap-2 text-center text-muted-foreground">
+                            <Upload className="h-8 w-8" />
+                            <p className="font-semibold">
+                              {isDragging ? 'Solte para enviar!' : 'Arraste e solte uma imagem aqui'}
+                            </p>
+                            <p className="text-sm">ou clique para selecionar um arquivo</p>
+                            <p className="mt-2 text-xs">PNG, JPG, GIF ou WEBP (Max 10MB)</p>
+                        </div>
+                    )}
                   </div>
-
                   <FormMessage />
                 </FormItem>
               )}
