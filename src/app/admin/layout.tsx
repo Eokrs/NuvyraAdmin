@@ -28,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -117,6 +118,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 px-4 shadow-sm backdrop-blur-md md:justify-end">
             <SidebarTrigger className="md:hidden" /> 
             <div className="flex items-center gap-4">
+              <ThemeToggle />
             </div>
         </header>
         <main className="flex-1 overflow-y-auto p-6 bg-background">
